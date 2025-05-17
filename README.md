@@ -23,13 +23,19 @@ This project was developed as part of the CodeCircuit Hackathon 2025, which chal
    cd anime-video-player
    ```
 
-2. **Video File Setup** (Important!)
-   - The video file is not included in this repository due to size limitations
-   - **Download the video file** from: [Anime Fights Video Link](https://drive.google.com/file/your_shared_link) (Please replace with your actual shared link)
-   - After downloading, place the video in the project root directory
-   - Either:
-     - Rename it to `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4`, or
-     - Edit the video source in `index.html` (line 1205) to match your filename
+2. **Video Setup** (Important!)
+   - The original demo video is available on YouTube: [Anime Fights Video](https://youtu.be/BgARtcQvLPc?si=G4ZE31t4WapvsG8i)
+   - **Option 1 (Recommended)**: Update the player to use the YouTube embed
+     ```javascript
+     // In index.html, locate the video element (around line 1205) and replace with:
+     <iframe width="100%" height="100%" src="https://www.youtube.com/embed/BgARtcQvLPc" 
+     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; 
+     gyroscope; picture-in-picture" allowfullscreen></iframe>
+     ```
+   - **Option 2**: Download the video locally (if needed for offline use)
+     - Use a YouTube downloader tool
+     - Place the downloaded file in the project root directory
+     - Name it `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4`
 
 3. **Launch the Player**
    ```bash
@@ -115,10 +121,9 @@ This project showcases several technical achievements that were part of the Code
    - Your site will be published at `https://yourusername.github.io/your-repository-name/`
 
 4. **Video Considerations**
-   - GitHub has a file size limit (usually 100MB)
-   - The video file used in this project is over 300MB, so it's not included in the repository
-   - For GitHub Pages, host the video externally (Google Drive, Dropbox, etc.) and update the video source in the HTML
-   - Alternatively, use a video hosting service and embed it with an iframe
+   - For GitHub Pages deployment, using the YouTube embed (Option 1) is strongly recommended
+   - This avoids file size limitations and ensures the video is always available
+   - The video can be viewed at: [https://youtu.be/BgARtcQvLPc?si=G4ZE31t4WapvsG8i](https://youtu.be/BgARtcQvLPc?si=G4ZE31t4WapvsG8i)
 
 ---
 
