@@ -836,17 +836,47 @@
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at center, #300800 0%, #150400 60%, #000000 100%);
-      z-index: 1000;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      transition: opacity 0.5s;
+      opacity: 1;
+      transition: opacity 0.5s ease;
     }
-
+    
+    .loading-text {
+      color: #ff6e00;
+      font-size: 1.5rem;
+      margin-top: 15px;
+      font-family: "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+    }
+    
+    .youtube-error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #ff6e00;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ff6e00;
+      max-width: 80%;
+      text-align: center;
+      z-index: 100;
+      box-shadow: 0 0 15px rgba(255, 110, 0, 0.5);
+    }
+    
+    .youtube-error p {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    
+    /* Loading animation */
     .loading-circle {
       width: 80px;
       height: 80px;
@@ -855,14 +885,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
-    .loading-text {
-      margin-top: 20px;
-      font-size: 1.5rem;
-      color: #FF6600;
-      text-shadow: 0 0 10px #FF8800;
-    }
-
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -1203,7 +1226,10 @@
     </div>
     
     <div class="video-wrapper">
-      <video id="video" src="Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4" autoplay muted></video>
+      <video id="video" controls preload="auto">
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
       <div class="controls">
         <div class="control-row">
           <button class="control-button" id="playButton">Play</button>
@@ -1273,22 +1299,6 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Function to try playing the video - can be called multiple times
-      function tryPlayVideo() {
-        if (video.paused) {
-          video.play().then(() => {
-            playButton.textContent = 'Pause';
-          }).catch(err => {
-            console.log('Autoplay prevented:', err);
-          });
-        }
-      }
-      
-      // Try autoplay when user interacts with the page
-      document.addEventListener('click', function() {
-        tryPlayVideo();
-      }, { once: true });
-      
       // References to DOM elements
       const animeWordContainer = document.getElementById('animeWordContainer');
       const titleArea = document.querySelector('.title-area');
@@ -1296,6 +1306,380 @@
       const titleShield = document.getElementById('titleShield');
       const titleShieldVisible = document.getElementById('titleShieldVisible');
       
+      // Video player controls
+      const video = document.getElementById('video');
+      const playButton = document.getElementById('playButton');
+      const progressBar = document.getElementById('progressBar');
+      const progress = document.getElementById('progress');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const muteButton = document.getElementById('muteButton');
+      const volumeSlider = document.getElementById('volumeSlider');
+      const speedSelect = document.getElementById('speedSelect');
+      const fullscreenButton = document.getElementById('fullscreenButton');
+      const loadingScreen = document.getElementById('loadingScreen');
+      
+      // Add event listeners to keep play/pause button state in sync with video state
+      video.addEventListener('play', function() {
+        playButton.textContent = 'Pause';
+      });
+      
+      video.addEventListener('pause', function() {
+        playButton.textContent = 'Play';
+      });
+      
+      video.addEventListener('ended', function() {
+        playButton.textContent = 'Play';
+      });
+      
+      // Play/Pause button
+      playButton.addEventListener('click', function() {
+        if (video.paused || video.ended) {
+          playButton.textContent = 'Pause';
+          video.play().catch(err => {
+            console.log('Play prevented:', err);
+            playButton.textContent = 'Play';
+          });
+        } else {
+          playButton.textContent = 'Play';
+          video.pause();
+        }
+      });
+      
+      // Fullscreen button
+      fullscreenButton.addEventListener('click', function() {
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      });
+      
+      // Progress bar
+      video.addEventListener('timeupdate', function() {
+        const percentage = (video.currentTime / video.duration) * 100;
+        progress.style.width = percentage + '%';
+        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      });
+      
+      // Click on progress bar
+      progressBar.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+      });
+      
+      // Volume controls
+      muteButton.addEventListener('click', function() {
+        video.muted = !video.muted;
+        if (video.muted) {
+          muteButton.textContent = '🔇';
+          volumeSlider.value = 0;
+        } else {
+          muteButton.textContent = '🔊';
+          volumeSlider.value = video.volume;
+        }
+      });
+      
+      volumeSlider.addEventListener('input', function() {
+        video.volume = this.value;
+        video.muted = (this.value === 0);
+        muteButton.textContent = (this.value === 0) ? '🔇' : '🔊';
+      });
+      
+      // Playback speed
+      speedSelect.addEventListener('change', function() {
+        video.playbackRate = this.value;
+      });
+      
+      // Hide loading screen when video is ready and start playback
+      video.addEventListener('canplay', function() {
+        setTimeout(() => {
+          loadingScreen.style.opacity = 0;
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            
+            // Try to autoplay
+            if (autoplayToggle.checked) {
+              playVideo();
+            }
+          }, 500);
+        }, 800);
+      });
+      
+      function playVideo() {
+        video.play().then(() => {
+          playButton.textContent = 'Pause';
+          video.muted = false;
+          muteButton.textContent = '🔊';
+          volumeSlider.value = 1;
+        }).catch(err => {
+          console.log('Autoplay prevented:', err);
+        });
+      }
+      
+      // Try to play video when page is clicked
+      document.addEventListener('click', function() {
+        if (video.paused) {
+          playVideo();
+        }
+      }, { once: true });
+      
+      // Format time to MM:SS
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        seconds = Math.floor(seconds % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      }
+      
+      // Fallback if video fails to load
+      setTimeout(() => {
+        if (loadingScreen.style.display !== 'none') {
+          console.log("Video taking too long to load, hiding loading screen anyway");
+          loadingScreen.style.opacity = 0;
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      }, 5000);
+      
+      // Comments elements
+      const commentInput = document.getElementById('commentInput');
+      const submitComment = document.getElementById('submitComment');
+      const commentList = document.getElementById('commentList');
+      const addTimestampComment = document.getElementById('addTimestampComment');
+      
+      // Comments array to store all comments
+      let comments = [];
+      
+      // Add comment with timestamp
+      function addComment(text, timestamp = null) {
+        if (!text.trim()) return;
+        
+        const time = timestamp !== null ? timestamp : video.currentTime;
+        const comment = {
+          text: text,
+          timestamp: time,
+          id: Date.now()
+        };
+        
+        comments.push(comment);
+        renderComments();
+        addTimestampMarker(comment);
+        commentInput.value = '';
+      }
+      
+      // Add timestamp marker to progress bar
+      function addTimestampMarker(comment) {
+        const marker = document.createElement('div');
+        marker.className = 'timestamp-marker';
+        const position = (comment.timestamp / video.duration) * 100;
+        marker.style.left = `${position}%`;
+        marker.title = `${formatTime(comment.timestamp)}: ${comment.text}`;
+        marker.dataset.timestamp = comment.timestamp;
+        
+        marker.addEventListener('click', function() {
+          video.currentTime = comment.timestamp;
+        });
+        
+        progressBar.appendChild(marker);
+      }
+      
+      // Render all comments
+      function renderComments() {
+        // Sort comments by timestamp
+        comments.sort((a, b) => a.timestamp - b.timestamp);
+        
+        // Clear existing comments
+        commentList.innerHTML = '';
+        
+        // Add all comments to the list
+        comments.forEach(comment => {
+          const commentElement = document.createElement('div');
+          commentElement.className = 'comment-item';
+          commentElement.innerHTML = `
+            <span class="comment-timestamp" data-timestamp="${comment.timestamp}">${formatTime(comment.timestamp)}</span>
+            <span>${comment.text}</span>
+          `;
+          
+          // Add click event to timestamp
+          commentElement.querySelector('.comment-timestamp').addEventListener('click', function() {
+            video.currentTime = comment.timestamp;
+          });
+          
+          commentList.appendChild(commentElement);
+        });
+      }
+      
+      // Event listeners for comments
+      submitComment.addEventListener('click', function() {
+        addComment(commentInput.value);
+      });
+      
+      commentInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addComment(this.value);
+        }
+      });
+      
+      addTimestampComment.addEventListener('click', function() {
+        commentInput.focus();
+        commentInput.value = `[${formatTime(video.currentTime)}] `;
+      });
+      
+      // Settings panel
+      const settingsButton = document.getElementById('settingsButton');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const bgToggle = document.getElementById('bgToggle');
+      const autoplayToggle = document.getElementById('autoplayToggle');
+      
+      // Toggle settings panel
+      settingsButton.addEventListener('click', function() {
+        settingsPanel.classList.toggle('visible');
+      });
+      
+      // Background toggle
+      bgToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.body.classList.add('bg-image');
+        } else {
+          document.body.classList.remove('bg-image');
+        }
+      });
+      
+      // Autoplay toggle
+      autoplayToggle.addEventListener('change', function() {
+        if (this.checked) {
+          video.autoplay = true;
+          if (video.paused || video.ended) {
+            // Use the Promise-based play method to handle browser restrictions
+            video.play().then(() => {
+              playButton.textContent = 'Pause';
+            }).catch(err => {
+              console.log('Play prevented by browser:', err);
+              // Some browsers require user interaction first
+              this.checked = false;
+            });
+          }
+        } else {
+          video.autoplay = false;
+        }
+      });
+
+      // Keyboard shortcuts
+      const keyboardShortcuts = document.getElementById('keyboardShortcuts');
+      let keyboardShortcutsVisible = false;
+      const shortcutHint = document.getElementById('shortcutHint');
+      
+      // Toggle keyboard shortcuts panel
+      function toggleKeyboardShortcuts() {
+        keyboardShortcutsVisible = !keyboardShortcutsVisible;
+        if (keyboardShortcutsVisible) {
+          keyboardShortcuts.classList.add('visible');
+          // Hide the hint when shortcuts are visible
+          shortcutHint.style.opacity = '0';
+        } else {
+          keyboardShortcuts.classList.remove('visible');
+          // Show the hint again when shortcuts are hidden
+          setTimeout(() => {
+            shortcutHint.style.opacity = '0.8';
+          }, 1000);
+        }
+      }
+      
+      // Click on shortcut hint shows the shortcuts
+      shortcutHint.addEventListener('click', function() {
+        if (!keyboardShortcutsVisible) {
+          toggleKeyboardShortcuts();
+        }
+      });
+
+      // Show keyboard shortcuts initially and hide after 5 seconds
+      setTimeout(() => {
+        toggleKeyboardShortcuts();
+        setTimeout(() => {
+          if (keyboardShortcutsVisible) {
+            toggleKeyboardShortcuts();
+          }
+        }, 5000);
+      }, 1500);
+      
+      // Keyboard controls
+      document.addEventListener('keydown', function(e) {
+        // Don't trigger shortcuts if typing in a text field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+        }
+        
+        switch(e.key) {
+          case ' ':  // Space
+            if (video.paused) {
+              video.play();
+              playButton.textContent = 'Pause';
+            } else {
+              video.pause();
+              playButton.textContent = 'Play';
+            }
+            e.preventDefault();
+            break;
+            
+          case 'f':  // Fullscreen
+          case 'F':
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+              video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+              video.msRequestFullscreen();
+            }
+            e.preventDefault();
+            break;
+            
+          case 'm':  // Mute
+          case 'M':
+            video.muted = !video.muted;
+            muteButton.textContent = video.muted ? '🔇' : '🔊';
+            volumeSlider.value = video.muted ? 0 : video.volume;
+            e.preventDefault();
+            break;
+            
+          case 'ArrowLeft':  // Rewind 10 seconds
+            video.currentTime = Math.max(0, video.currentTime - 10);
+            e.preventDefault();
+            break;
+            
+          case 'ArrowRight':  // Forward 10 seconds
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            e.preventDefault();
+            break;
+            
+          case 'ArrowUp':  // Volume up
+            video.volume = Math.min(1, video.volume + 0.1);
+            volumeSlider.value = video.volume;
+            video.muted = false;
+            muteButton.textContent = '🔊';
+            e.preventDefault();
+            break;
+            
+          case 'ArrowDown':  // Volume down
+            video.volume = Math.max(0, video.volume - 0.1);
+            volumeSlider.value = video.volume;
+            if (video.volume === 0) {
+              video.muted = true;
+              muteButton.textContent = '🔇';
+            }
+            e.preventDefault();
+            break;
+            
+          case 'k':  // Toggle keyboard shortcuts
+          case 'K':
+            toggleKeyboardShortcuts();
+            e.preventDefault();
+            break;
+        }
+      });
+
       // Title bounds for proximity detection
       let titleBounds = {
         top: 0,
@@ -2001,446 +2385,6 @@
         }, 800);
       }
 
-      // Loading screen
-      const loadingScreen = document.getElementById('loadingScreen');
-      
-      // Initialize video controls
-      const video = document.getElementById('video');
-      const playButton = document.getElementById('playButton');
-      const fullscreenButton = document.getElementById('fullscreenButton');
-      const progressBar = document.getElementById('progressBar');
-      const progress = document.getElementById('progress');
-      const timeDisplay = document.getElementById('timeDisplay');
-      const muteButton = document.getElementById('muteButton');
-      const volumeSlider = document.getElementById('volumeSlider');
-      const speedSelect = document.getElementById('speedSelect');
-      
-      // Add event listeners to keep play/pause button state in sync with video state
-      video.addEventListener('play', function() {
-        playButton.textContent = 'Pause';
-      });
-      
-      video.addEventListener('pause', function() {
-        playButton.textContent = 'Play';
-      });
-      
-      video.addEventListener('ended', function() {
-        playButton.textContent = 'Play';
-      });
-      
-      // Comments elements
-      const commentInput = document.getElementById('commentInput');
-      const submitComment = document.getElementById('submitComment');
-      const commentList = document.getElementById('commentList');
-      const addTimestampComment = document.getElementById('addTimestampComment');
-      
-      // Comments array to store all comments
-      let comments = [];
-      
-      // Format time to MM:SS
-      function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        seconds = Math.floor(seconds % 60);
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-      }
-      
-      // Play/Pause button
-      playButton.addEventListener('click', function() {
-        // Check the actual state of the video before toggling
-        if (video.paused || video.ended || video.currentTime === 0) {
-          // Ensure play() is called and button state is updated immediately
-          playButton.textContent = 'Pause';
-          video.play().catch(err => {
-            // If play fails, revert the button text
-            console.log('Play prevented:', err);
-            playButton.textContent = 'Play';
-          });
-        } else {
-          // Ensure pause() is called and button state is updated immediately
-          playButton.textContent = 'Play';
-          video.pause();
-        }
-      });
-      
-      // Fullscreen button
-      fullscreenButton.addEventListener('click', function() {
-        if (video.requestFullscreen) {
-          video.requestFullscreen();
-        } else if (video.webkitRequestFullscreen) {
-          video.webkitRequestFullscreen();
-        } else if (video.msRequestFullscreen) {
-          video.msRequestFullscreen();
-        }
-      });
-      
-      // Progress bar
-      video.addEventListener('timeupdate', function() {
-        const percentage = (video.currentTime / video.duration) * 100;
-        progress.style.width = percentage + '%';
-        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-      });
-      
-      // Click on progress bar
-      progressBar.addEventListener('click', function(e) {
-        const rect = this.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        video.currentTime = pos * video.duration;
-      });
-      
-      // Volume controls
-      muteButton.addEventListener('click', function() {
-        video.muted = !video.muted;
-        if (video.muted) {
-          muteButton.textContent = '🔇';
-          volumeSlider.value = 0;
-        } else {
-          muteButton.textContent = '🔊';
-          volumeSlider.value = video.volume;
-        }
-      });
-      
-      volumeSlider.addEventListener('input', function() {
-        video.volume = this.value;
-        video.muted = (this.value === 0);
-        muteButton.textContent = (this.value === 0) ? '🔇' : '🔊';
-      });
-      
-      // Playback speed
-      speedSelect.addEventListener('change', function() {
-        video.playbackRate = this.value;
-      });
-      
-      // Add comment with timestamp
-      function addComment(text, timestamp = null) {
-        if (!text.trim()) return;
-        
-        const time = timestamp !== null ? timestamp : video.currentTime;
-        const comment = {
-          text: text,
-          timestamp: time,
-          id: Date.now()
-        };
-        
-        comments.push(comment);
-        renderComments();
-        addTimestampMarker(comment);
-        commentInput.value = '';
-      }
-      
-      // Add timestamp marker to progress bar
-      function addTimestampMarker(comment) {
-        const marker = document.createElement('div');
-        marker.className = 'timestamp-marker';
-        const position = (comment.timestamp / video.duration) * 100;
-        marker.style.left = `${position}%`;
-        marker.title = `${formatTime(comment.timestamp)}: ${comment.text}`;
-        marker.dataset.timestamp = comment.timestamp;
-        
-        marker.addEventListener('click', function() {
-          video.currentTime = comment.timestamp;
-        });
-        
-        progressBar.appendChild(marker);
-      }
-      
-      // Render all comments
-      function renderComments() {
-        // Sort comments by timestamp
-        comments.sort((a, b) => a.timestamp - b.timestamp);
-        
-        // Clear existing comments
-        commentList.innerHTML = '';
-        
-        // Add all comments to the list
-        comments.forEach(comment => {
-          const commentElement = document.createElement('div');
-          commentElement.className = 'comment-item';
-          commentElement.innerHTML = `
-            <span class="comment-timestamp" data-timestamp="${comment.timestamp}">${formatTime(comment.timestamp)}</span>
-            <span>${comment.text}</span>
-          `;
-          
-          // Add click event to timestamp
-          commentElement.querySelector('.comment-timestamp').addEventListener('click', function() {
-            video.currentTime = comment.timestamp;
-          });
-          
-          commentList.appendChild(commentElement);
-        });
-      }
-      
-      // Event listeners for comments
-      submitComment.addEventListener('click', function() {
-        addComment(commentInput.value);
-      });
-      
-      commentInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          addComment(this.value);
-        }
-      });
-      
-      addTimestampComment.addEventListener('click', function() {
-        commentInput.focus();
-        commentInput.value = `[${formatTime(video.currentTime)}] `;
-      });
-      
-      // Settings panel
-      const settingsButton = document.getElementById('settingsButton');
-      const settingsPanel = document.getElementById('settingsPanel');
-      const bgToggle = document.getElementById('bgToggle');
-      const autoplayToggle = document.getElementById('autoplayToggle');
-      
-      // Toggle settings panel
-      settingsButton.addEventListener('click', function() {
-        settingsPanel.classList.toggle('visible');
-      });
-      
-      // Background toggle
-      bgToggle.addEventListener('change', function() {
-        if (this.checked) {
-          document.body.classList.add('bg-image');
-        } else {
-          document.body.classList.remove('bg-image');
-        }
-      });
-      
-      // Autoplay toggle
-      autoplayToggle.addEventListener('change', function() {
-        if (this.checked) {
-          video.autoplay = true;
-          if (video.paused || video.ended) {
-            // Use the Promise-based play method to handle browser restrictions
-            video.play().then(() => {
-              playButton.textContent = 'Pause';
-            }).catch(err => {
-              console.log('Play prevented by browser:', err);
-              // Some browsers require user interaction first
-              this.checked = false;
-            });
-          }
-        } else {
-          video.autoplay = false;
-        }
-      });
-
-      // Keyboard shortcuts
-      const keyboardShortcuts = document.getElementById('keyboardShortcuts');
-      let keyboardShortcutsVisible = false;
-      const shortcutHint = document.getElementById('shortcutHint');
-      
-      // Toggle keyboard shortcuts panel
-      function toggleKeyboardShortcuts() {
-        keyboardShortcutsVisible = !keyboardShortcutsVisible;
-        if (keyboardShortcutsVisible) {
-          keyboardShortcuts.classList.add('visible');
-          // Hide the hint when shortcuts are visible
-          shortcutHint.style.opacity = '0';
-        } else {
-          keyboardShortcuts.classList.remove('visible');
-          // Show the hint again when shortcuts are hidden
-          setTimeout(() => {
-            shortcutHint.style.opacity = '0.8';
-          }, 1000);
-        }
-      }
-      
-      // Click on shortcut hint shows the shortcuts
-      shortcutHint.addEventListener('click', function() {
-        if (!keyboardShortcutsVisible) {
-          toggleKeyboardShortcuts();
-        }
-      });
-
-      // Show keyboard shortcuts initially and hide after 5 seconds
-      setTimeout(() => {
-        toggleKeyboardShortcuts();
-        setTimeout(() => {
-          if (keyboardShortcutsVisible) {
-            toggleKeyboardShortcuts();
-          }
-        }, 5000);
-      }, 1500);
-      
-      // Keyboard controls
-      document.addEventListener('keydown', function(e) {
-        // Don't trigger shortcuts if typing in a text field
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-          return;
-        }
-        
-        switch(e.key) {
-          case ' ':  // Space
-            if (video.paused) {
-              video.play();
-              playButton.textContent = 'Pause';
-            } else {
-              video.pause();
-              playButton.textContent = 'Play';
-            }
-            e.preventDefault();
-            break;
-            
-          case 'f':  // Fullscreen
-          case 'F':
-            if (video.requestFullscreen) {
-              video.requestFullscreen();
-            } else if (video.webkitRequestFullscreen) {
-              video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) {
-              video.msRequestFullscreen();
-            }
-            e.preventDefault();
-            break;
-            
-          case 'm':  // Mute
-          case 'M':
-            video.muted = !video.muted;
-            muteButton.textContent = video.muted ? '🔇' : '🔊';
-            volumeSlider.value = video.muted ? 0 : video.volume;
-            e.preventDefault();
-            break;
-            
-          case 'ArrowLeft':  // Rewind 10 seconds
-            video.currentTime = Math.max(0, video.currentTime - 10);
-            e.preventDefault();
-            break;
-            
-          case 'ArrowRight':  // Forward 10 seconds
-            video.currentTime = Math.min(video.duration, video.currentTime + 10);
-            e.preventDefault();
-            break;
-            
-          case 'ArrowUp':  // Volume up
-            video.volume = Math.min(1, video.volume + 0.1);
-            volumeSlider.value = video.volume;
-            video.muted = false;
-            muteButton.textContent = '🔊';
-            e.preventDefault();
-            break;
-            
-          case 'ArrowDown':  // Volume down
-            video.volume = Math.max(0, video.volume - 0.1);
-            volumeSlider.value = video.volume;
-            if (video.volume === 0) {
-              video.muted = true;
-              muteButton.textContent = '🔇';
-            }
-            e.preventDefault();
-            break;
-            
-          case 'k':  // Toggle keyboard shortcuts
-          case 'K':
-            toggleKeyboardShortcuts();
-            e.preventDefault();
-            break;
-        }
-      });
-
-      // Hide loading screen when video is ready and start playback
-      video.addEventListener('canplay', function() {
-        setTimeout(() => {
-          loadingScreen.style.opacity = 0;
-          setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            
-            // Force play after loading screen is gone
-            const startPlayback = function() {
-              video.play().then(() => {
-                // Update play button text
-                playButton.textContent = 'Pause';
-                // Unmute after playback starts - some browsers only allow autoplay when muted
-                video.muted = false;
-                muteButton.textContent = '🔊';
-                volumeSlider.value = 1;
-              }).catch(err => {
-                console.log('Autoplay prevented:', err);
-              });
-            };
-            
-            startPlayback();
-            
-            // Some browsers may automatically pause the video, let's re-try playback after a short delay
-            setTimeout(startPlayback, 300);
-          }, 500);
-        }, 800);
-      });
-
-      // Create black flame burst effect
-      function createBlackFlameBurst(wordElement) {
-        const rect = wordElement.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
-        // Create burst container
-        const burstContainer = document.createElement('div');
-        burstContainer.style.position = 'absolute';
-        burstContainer.style.left = x + 'px';
-        burstContainer.style.top = y + 'px';
-        burstContainer.style.transform = 'translate(-50%, -50%)';
-        burstContainer.style.width = '100px';
-        burstContainer.style.height = '100px';
-        burstContainer.style.borderRadius = '50%';
-        burstContainer.style.background = 'radial-gradient(circle, rgba(100,100,190,0.7) 0%, rgba(40,40,100,0.4) 40%, rgba(10,10,50,0) 70%)';
-        burstContainer.style.boxShadow = '0 0 30px rgba(80, 80, 150, 0.7)';
-        burstContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
-        burstContainer.style.pointerEvents = 'none';
-        burstContainer.style.animation = 'powerBurst 0.8s forwards';
-        
-        document.body.appendChild(burstContainer);
-        
-        // Create particles
-        const particleContainer = document.createElement('div');
-        particleContainer.className = 'anime-particles';
-        particleContainer.style.left = x + 'px';
-        particleContainer.style.top = y + 'px';
-        particleContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
-        document.body.appendChild(particleContainer);
-        
-        // Create black flame particles
-        for (let i = 0; i < 20; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'particle';
-          
-          // Size variation
-          const size = 2 + Math.random() * 4;
-          particle.style.width = size + 'px';
-          particle.style.height = size + 'px';
-          
-          // Random angle and distance
-          const angle = Math.random() * Math.PI * 2;
-          const distance = 50 + Math.random() * 80;
-          
-          // Calculate trajectory
-          const xOffset = Math.cos(angle) * distance;
-          const yOffset = Math.sin(angle) * distance;
-          
-          // Set animation variables
-          particle.style.setProperty('--x', xOffset + 'px');
-          particle.style.setProperty('--y', yOffset + 'px');
-          
-          // Dark blue/purple particles
-          const hue = 230 + Math.random() * 40;
-          particle.style.background = `hsl(${hue}, 70%, ${40 + Math.random() * 40}%)`;
-          particle.style.boxShadow = `0 0 ${2 + Math.random() * 4}px hsl(${hue}, 90%, 50%)`;
-          
-          // Animation duration variation
-          particle.style.animation = `particleAnimation ${0.3 + Math.random() * 0.5}s forwards`;
-          
-          particleContainer.appendChild(particle);
-        }
-        
-        // Clean up after animation
-        setTimeout(() => {
-          if (burstContainer && burstContainer.parentNode) {
-            burstContainer.parentNode.removeChild(burstContainer);
-          }
-          if (particleContainer && particleContainer.parentNode) {
-            particleContainer.parentNode.removeChild(particleContainer);
-          }
-        }, 1000);
-      }
-      
       // Function to destroy a black flame word with special explosion effect
       function destroyBlackFlameWord(wordElement, proximityInterval, isClickDestroy = false) {
         // Stop checking proximity
