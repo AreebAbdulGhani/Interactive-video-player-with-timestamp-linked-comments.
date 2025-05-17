@@ -1,6 +1,10 @@
 # 🔥 Anime Interactive Video Player 🔥
 
-An immersive video player with floating Japanese text, particle effects, and timestamp-linked comments. Created for the CodeCircuit Hackathon.
+An immersive video player with floating Japanese text, particle effects, and timestamp-linked comments. Proudly created for the **CodeCircuit Hackathon 2025**.
+
+## 🏆 CodeCircuit Hackathon Project
+
+This project was developed as part of the CodeCircuit Hackathon 2025, which challenged participants to create innovative and interactive web applications. The concept **"Interactive video player with timestamp-linked comments"** was selected from the hackathon's provided list of project ideas and enhanced with anime-themed visuals and interactive elements.
 
 ## ✨ Key Features
 
@@ -60,12 +64,58 @@ An immersive video player with floating Japanese text, particle effects, and tim
 - **Footer Links**: Click social links to see destruction animations
 - **Title Collisions**: Watch words explode when they touch the title
 
+## 💡 Hackathon Implementation
+
+This project showcases several technical achievements that were part of the CodeCircuit Hackathon 2025 requirements:
+- **Performance Optimization**: Reduced animation load for smoother experience
+- **No External Libraries**: Built using vanilla JavaScript without dependencies
+- **Responsive Design**: Adapts to different screen sizes
+- **User Interaction**: Multiple interactive elements with visual feedback
+- **Creative UI/UX**: Anime-themed interface with dynamic elements
+
 ## 🙏 Acknowledgments
 
-- Special thanks to the **CodeCircuit Hackathon** for the opportunity
+- Special thanks to the **CodeCircuit Hackathon 2025** organizers and judges
+- Gratitude to fellow participants for inspiration and feedback
 - Built with vibe by Areeb
 - All anime-themed content is for demonstration purposes
 
+## 🌐 Hosting on GitHub Pages
+
+1. **Create a GitHub Repository**
+   - Create a new repository on GitHub
+   - Initialize it with a README if you want
+
+2. **Upload Files to GitHub**
+   ```bash
+   # Initialize git repository (if not already done)
+   git init
+   
+   # Add all files
+   git add .
+   
+   # Commit the files
+   git commit -m "Initial commit: Anime Interactive Video Player"
+   
+   # Add your GitHub repository as remote
+   git remote add origin https://github.com/YourUsername/YourRepositoryName.git
+   
+   # Push to GitHub
+   git push -u origin main
+   ```
+
+3. **Enable GitHub Pages**
+   - Go to your repository on GitHub
+   - Navigate to Settings > Pages
+   - Set Source to "main" branch and folder to "/ (root)"
+   - Click Save
+   - Your site will be published at `https://yourusername.github.io/your-repository-name/`
+
+4. **Video Considerations**
+   - GitHub has a file size limit (usually 100MB)
+   - Your current video is ~31MB so it should work fine
+   - For larger videos, consider using a video hosting service instead
+
 ---
 
-⚡ Made with vibe by Areeb ⚡
+⚡ Made with vibe by Areeb - CodeCircuit Hackathon 2025 ⚡
