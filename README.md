@@ -24,9 +24,12 @@ This project was developed as part of the CodeCircuit Hackathon 2025, which chal
    ```
 
 2. **Video File Setup** (Important!)
-   - Place your anime video file in the project directory
-   - Name it exactly: `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4` 
-   - If using a different filename, edit line 1205 in `anime-video-player-fixed.html`
+   - The original video file is not included in the repository due to size limitations
+   - You'll need to supply your own video file:
+     - Place it in the project directory
+     - Name it exactly: `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4`
+     - Or edit line 1205 in `anime-video-player-fixed.html` to match your filename
+   - Recommended: Use any anime compilation or AMV video (MP4 format)
 
 3. **Launch the Player**
    ```bash
