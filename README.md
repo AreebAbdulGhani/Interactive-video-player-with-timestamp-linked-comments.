@@ -24,12 +24,12 @@ This project was developed as part of the CodeCircuit Hackathon 2025, which chal
    ```
 
 2. **Video File Setup** (Important!)
-   - The original video file is not included in the repository due to size limitations
-   - You'll need to supply your own video file:
-     - Place it in the project directory
-     - Name it exactly: `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4`
-     - Or edit line 1205 in `anime-video-player-fixed.html` to match your filename
-   - Recommended: Use any anime compilation or AMV video (MP4 format)
+   - The video file is not included in this repository due to size limitations
+   - **Download the video file** from: [Anime Fights Video Link](https://drive.google.com/file/your_shared_link) (Please replace with your actual shared link)
+   - After downloading, place the video in the project root directory
+   - Either:
+     - Rename it to `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4`, or
+     - Edit the video source in `index.html` (line 1205) to match your filename
 
 3. **Launch the Player**
    ```bash
@@ -116,8 +116,9 @@ This project showcases several technical achievements that were part of the Code
 
 4. **Video Considerations**
    - GitHub has a file size limit (usually 100MB)
-   - Your current video is ~31MB so it should work fine
-   - For larger videos, consider using a video hosting service instead
+   - The video file used in this project is over 300MB, so it's not included in the repository
+   - For GitHub Pages, host the video externally (Google Drive, Dropbox, etc.) and update the video source in the HTML
+   - Alternatively, use a video hosting service and embed it with an iframe
 
 ---
 
