@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anime Video Player</title>
+  <style>
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #000000 0%, #1a0500 40%, #000000 100%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.5s ease;
+      position: relative;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    
+    /* Background image option */
+    body.bg-image {
+      background-image: url('https://images.unsplash.com/photo-1578584099737-2a23864cad11?q=80&w=1920&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    
+    body.bg-image::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 0;
+    }
+    
+    /* Anime word effects in background */
+    .anime-word-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+      pointer-events: none; /* Make the container non-blocking for mouse interactions */
+    }
+    
+    .anime-word {
+      pointer-events: auto; /* Re-enable pointer events for individual words */
+    }
+    
+    .anime-word {
+      position: absolute;
+      font-family: "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+      font-weight: bold;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      z-index: 5;
+    }
+    
+    .anime-word:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    /* Default glow style */
+    .anime-word.glow {
+      color: rgba(255, 255, 255, 0.4);
+      text-shadow: 0 0 5px rgba(255, 80, 0, 0.7), 0 0 10px rgba(255, 130, 0, 0.5);
+    }
+
+    /* Fire style */
+    .anime-word.fire {
+      color: rgba(255, 255, 220, 0.9);
+      text-shadow: 
+        0 0 5px rgba(255, 50, 0, 1),
+        0 0 10px rgba(255, 100, 0, 0.8),
+        0 0 15px rgba(255, 150, 0, 0.6),
+        0 0 20px rgba(255, 200, 0, 0.4);
+    }
+    
+    /* Independent movement animations - multiple variations */
+    .anime-word.move-1 {
+      animation: floatWord1 15s linear infinite, fadeInOut 15s ease-in-out infinite;
+    }
+    
+    .anime-word.move-2 {
+      animation: floatWord2 18s linear infinite, fadeInOut 18s ease-in-out infinite;
+    }
+    
+    .anime-word.move-3 {
+      animation: floatWord3 20s linear infinite, fadeInOut 20s ease-in-out infinite;
+    }
+    
+    .anime-word.move-4 {
+      animation: floatWord4 22s linear infinite, fadeInOut 22s ease-in-out infinite;
+    }
+    
+    .anime-word.move-5 {
+      animation: floatWord5 25s linear infinite, fadeInOut 25s ease-in-out infinite;
+    }
+    
+    .anime-word.fire.move-1 {
+      animation: floatWord1 15s linear infinite, fadeInOut 15s ease-in-out infinite, fireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.fire.move-2 {
+      animation: floatWord2 18s linear infinite, fadeInOut 18s ease-in-out infinite, fireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.fire.move-3 {
+      animation: floatWord3 20s linear infinite, fadeInOut 20s ease-in-out infinite, fireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.fire.move-4 {
+      animation: floatWord4 22s linear infinite, fadeInOut 22s ease-in-out infinite, fireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.fire.move-5 {
+      animation: floatWord5 25s linear infinite, fadeInOut 25s ease-in-out infinite, fireEffect 2s infinite alternate;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      10%, 90% { opacity: 0.7; }
+    }
+    
+    @keyframes floatWord1 {
+      0% { transform: translate(-50%, -50%) translateX(-100px) translateY(-20px); }
+      25% { transform: translate(-50%, -50%) translateX(-40px) translateY(30px); }
+      50% { transform: translate(-50%, -50%) translateX(50px) translateY(-10px); }
+      75% { transform: translate(-50%, -50%) translateX(20px) translateY(-40px); }
+      100% { transform: translate(-50%, -50%) translateX(-100px) translateY(-20px); }
+    }
+    
+    @keyframes floatWord2 {
+      0% { transform: translate(-50%, -50%) translateX(80px) translateY(50px); }
+      25% { transform: translate(-50%, -50%) translateX(-20px) translateY(10px); }
+      50% { transform: translate(-50%, -50%) translateX(-60px) translateY(60px); }
+      75% { transform: translate(-50%, -50%) translateX(30px) translateY(0px); }
+      100% { transform: translate(-50%, -50%) translateX(80px) translateY(50px); }
+    }
+    
+    @keyframes floatWord3 {
+      0% { transform: translate(-50%, -50%) translateX(-50px) translateY(80px); }
+      33% { transform: translate(-50%, -50%) translateX(40px) translateY(20px); }
+      66% { transform: translate(-50%, -50%) translateX(10px) translateY(-40px); }
+      100% { transform: translate(-50%, -50%) translateX(-50px) translateY(80px); }
+    }
+    
+    @keyframes floatWord4 {
+      0% { transform: translate(-50%, -50%) translateX(40px) translateY(-70px); }
+      33% { transform: translate(-50%, -50%) translateX(-30px) translateY(-30px); }
+      66% { transform: translate(-50%, -50%) translateX(-60px) translateY(30px); }
+      100% { transform: translate(-50%, -50%) translateX(40px) translateY(-70px); }
+    }
+    
+    @keyframes floatWord5 {
+      0% { transform: translate(-50%, -50%) translateX(-20px) translateY(0px) rotate(-2deg); }
+      20% { transform: translate(-50%, -50%) translateX(40px) translateY(-40px) rotate(0deg); }
+      40% { transform: translate(-50%, -50%) translateX(70px) translateY(10px) rotate(2deg); }
+      60% { transform: translate(-50%, -50%) translateX(30px) translateY(50px) rotate(0deg); }
+      80% { transform: translate(-50%, -50%) translateX(-30px) translateY(40px) rotate(-2deg); }
+      100% { transform: translate(-50%, -50%) translateX(-20px) translateY(0px) rotate(-2deg); }
+    }
+
+    @keyframes fireEffect {
+      0%, 100% {
+        text-shadow: 
+          0 0 5px rgba(255, 50, 0, 1),
+          0 0 10px rgba(255, 100, 0, 0.8),
+          0 0 15px rgba(255, 150, 0, 0.6),
+          0 0 20px rgba(255, 200, 0, 0.4);
+      }
+      50% {
+        text-shadow: 
+          0 0 7px rgba(255, 80, 0, 1),
+          0 0 15px rgba(255, 130, 0, 0.9),
+          0 0 20px rgba(255, 180, 0, 0.7),
+          0 0 25px rgba(255, 230, 0, 0.5);
+      }
+    }
+    
+    /* Click effect animations */
+    @keyframes powerBurst {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        filter: brightness(1);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(2.5);
+        filter: brightness(2);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(3);
+        filter: brightness(1);
+        opacity: 0;
+      }
+    }
+    
+    /* Repel effect for words near title */
+    @keyframes repelEffect {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        filter: brightness(1.5) hue-rotate(0deg);
+        opacity: 0.7;
+      }
+      30% {
+        transform: translate(-50%, -50%) scale(1.1) translateY(30px);
+        filter: brightness(1.8) hue-rotate(45deg);
+        opacity: 0.8;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(0.9) translateY(50px);
+        filter: brightness(1.3) hue-rotate(90deg);
+        opacity: 0.6;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1) translateY(80px);
+        filter: brightness(1) hue-rotate(180deg);
+        opacity: 0.4;
+      }
+    }
+
+    @keyframes energySurge {
+      0% { 
+        box-shadow: 0 0 5px rgba(255, 100, 0, 0.5),
+                   0 0 10px rgba(255, 130, 0, 0.3);
+        opacity: 0.3;
+      }
+      50% { 
+        box-shadow: 0 0 15px rgba(255, 120, 0, 0.8),
+                   0 0 30px rgba(255, 150, 0, 0.6),
+                   0 0 50px rgba(255, 180, 0, 0.4);
+        opacity: 0.7;
+      }
+      100% { 
+        box-shadow: 0 0 5px rgba(255, 100, 0, 0.5),
+                   0 0 10px rgba(255, 130, 0, 0.3);
+        opacity: 0.3;
+      }
+    }
+
+    @keyframes rippleEffect {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        box-shadow: 0 0 0 50px rgba(255, 255, 255, 0);
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes glitchEffect {
+      0% {
+        clip-path: inset(0 0 0 0);
+        transform: translate(-50%, -50%) scale(1);
+      }
+      10% {
+        clip-path: inset(10% 0 0 0);
+        transform: translate(-52%, -48%) scale(1.05) skew(2deg, 0);
+      }
+      20% {
+        clip-path: inset(0 10% 0 0);
+        transform: translate(-48%, -52%) scale(0.95) skew(-2deg, 0);
+      }
+      30% {
+        clip-path: inset(0 0 10% 0);
+        transform: translate(-51%, -49%) scale(1.1) skew(0, 2deg);
+      }
+      40% {
+        clip-path: inset(0 0 0 10%);
+        transform: translate(-49%, -51%) scale(0.9) skew(0, -2deg);
+      }
+      50% {
+        clip-path: inset(10% 10% 0 0);
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      60% {
+        clip-path: inset(0 0 10% 10%);
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      70% {
+        clip-path: inset(0 10% 10% 0);
+        transform: translate(-50%, -50%) scale(1.1) rotate(1deg);
+      }
+      80% {
+        clip-path: inset(10% 0 0 10%);
+        transform: translate(-50%, -50%) scale(0.9) rotate(-1deg);
+      }
+      100% {
+        clip-path: inset(0 0 0 0);
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .title-shield {
+      position: absolute;
+      top: -30px;
+      left: 0;
+      right: 0;
+      bottom: 70px;
+      margin: 0 auto;
+      pointer-events: none;
+      z-index: 12;
+      border-radius: 50%;
+      opacity: 0;
+      width: 100%;
+    }
+
+    .title-shield.active {
+      animation: energySurge 1s ease-in-out;
+    }
+
+    /* Main container */
+    .container {
+      position: relative;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      z-index: 10;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    /* Title area */
+    .title-area {
+      position: relative;
+      padding: 10px;
+      z-index: 16;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Particles for power burst */
+    .anime-particles {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      background-color: #fff;
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    @keyframes particleAnimation {
+      0% {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+        scale: 1;
+      }
+      70% {
+        opacity: 0.7;
+        scale: 0.7;
+      }
+      100% {
+        transform: translateX(var(--x)) translateY(var(--y));
+        opacity: 0;
+        scale: 0;
+      }
+    }
+    
+    /* Titles with anime fire effect */
+    @keyframes fireGlow {
+      0% {
+        text-shadow: 
+          0 0 5px rgba(255, 60, 0, 0.7),
+          0 0 10px rgba(255, 100, 0, 0.7),
+          0 0 15px rgba(255, 140, 0, 0.7),
+          0 0 20px rgba(255, 180, 0, 0.5),
+          0 0 30px rgba(255, 220, 0, 0.4);
+        color: rgba(255, 255, 220, 1);
+      }
+      50% {
+        text-shadow: 
+          0 0 10px rgba(255, 80, 0, 0.9),
+          0 0 20px rgba(255, 120, 0, 0.8),
+          0 0 30px rgba(255, 160, 0, 0.7),
+          0 0 40px rgba(255, 200, 0, 0.6),
+          0 0 50px rgba(255, 240, 0, 0.5);
+        color: rgba(255, 255, 255, 1);
+      }
+      100% {
+        text-shadow: 
+          0 0 5px rgba(255, 60, 0, 0.7),
+          0 0 10px rgba(255, 100, 0, 0.7),
+          0 0 15px rgba(255, 140, 0, 0.7),
+          0 0 20px rgba(255, 180, 0, 0.5),
+          0 0 30px rgba(255, 220, 0, 0.4);
+        color: rgba(255, 255, 220, 1);
+      }
+    }
+
+    .title {
+      color: #FFFFDD;
+      font-size: 2.8rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-shadow: 
+        0 0 5px rgba(255, 60, 0, 0.7),
+        0 0 10px rgba(255, 100, 0, 0.7),
+        0 0 15px rgba(255, 140, 0, 0.7),
+        0 0 20px rgba(255, 180, 0, 0.5);
+      animation: fireGlow 3s infinite alternate;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 15;
+      text-align: center;
+      -webkit-text-stroke: 0.5px rgba(255, 100, 0, 0.5);
+      filter: contrast(1.2);
+    }
+    
+    .title::before {
+      content: "インタラクティブビデオプレーヤー";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      text-align: center;
+      color: rgba(255, 180, 0, 0.4);
+      z-index: -1;
+      filter: blur(2px);
+    }
+    
+    .subtitle {
+      color: #FFFFDD;
+      font-size: 1.6rem;
+      margin-bottom: 2.5rem;
+      text-shadow: 
+        0 0 5px rgba(255, 80, 0, 0.7),
+        0 0 10px rgba(255, 120, 0, 0.6),
+        0 0 15px rgba(255, 160, 0, 0.5);
+      animation: fireGlow 4s infinite alternate-reverse;
+      letter-spacing: 1px;
+      font-weight: 500;
+      position: relative;
+      transform-style: preserve-3d;
+      z-index: 14;
+      text-align: center;
+      -webkit-text-stroke: 0.3px rgba(255, 120, 0, 0.3);
+    }
+    
+    .subtitle::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 25%;
+      width: 50%;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        rgba(255,140,0,0) 0%, 
+        rgba(255,140,0,0.8) 50%, 
+        rgba(255,140,0,0) 100%);
+      animation: lineGlow 2s infinite;
+    }
+
+    @keyframes lineGlow {
+      0%, 100% { 
+        opacity: 0.4;
+        transform: scaleX(0.8);
+        filter: blur(1px);
+      }
+      50% { 
+        opacity: 1;
+        transform: scaleX(1.1);
+        filter: blur(0px);
+      }
+    }
+
+    /* Explosion animation for words that touch the title */
+    @keyframes explode {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        filter: brightness(1.2);
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0.7;
+        filter: brightness(1.8) blur(2px);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+        filter: brightness(0.5) blur(4px);
+      }
+    }
+
+    @keyframes gentlePulse {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+    
+    /* Video player */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #FF6600;
+      box-shadow: 0 0 30px #FF6600, 0 0 60px rgba(255, 102, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2;
+    }
+    
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    
+    .controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+    }
+    
+    .control-button {
+      background: linear-gradient(135deg, #FF6600 0%, #992200 100%);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+      box-shadow: 0 0 8px rgba(255, 102, 0, 0.5);
+      text-shadow: 0 0 3px #000;
+    }
+    
+    .control-button:hover {
+      background: linear-gradient(135deg, #FF8800 20%, #FF4400 80%);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 102, 0, 0.7);
+    }
+    
+    .control-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(255, 102, 0, 0.5);
+    }
+    
+    .control-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .control-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .progress {
+      flex-grow: 1;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.2);
+      position: relative;
+      margin: 0 1rem;
+      cursor: pointer;
+    }
+    
+    .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background-color: #FF6600;
+      width: 0%;
+    }
+    
+    .time-display {
+      color: white;
+      font-size: 14px;
+      min-width: 90px;
+      text-align: right;
+    }
+    
+    .timestamp-marker {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: #FFAA00;
+      border-radius: 50%;
+      top: -2px;
+      transform: translateX(-50%);
+      cursor: pointer;
+      box-shadow: 0 0 5px #FF8800;
+      z-index: 2;
+    }
+    
+    .volume-container {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
+    
+    .volume-slider {
+      width: 80px;
+      margin: 0 10px;
+      -webkit-appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      outline: none;
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #FF6600;
+      cursor: pointer;
+      box-shadow: 0 0 5px #FF6600;
+    }
+    
+    .speed-select {
+      background: rgba(255, 102, 0, 0.2);
+      border: 1px solid #FF6600;
+      color: white;
+      padding: 0.4rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-right: 10px;
+    }
+    
+    .speed-select option {
+      background-color: #220800;
+    }
+
+    /* Mini-map removed */
+
+    /* Comments section */
+    .comments-container {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 30px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 15px;
+      border: 2px solid #FF6600;
+      box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+    }
+
+    .comments-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      color: #FFFFFF;
+      text-shadow: 0 0 5px #FF6600;
+    }
+
+    .comment-input {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #FF6600;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      margin-right: 10px;
+    }
+
+    .comment-timestamp {
+      background-color: rgba(255, 102, 0, 0.3);
+      color: white;
+      padding: 2px 5px;
+      border-radius: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255, 102, 0, 0.5);
+      white-space: nowrap;
+    }
+
+    .comment-timestamp:hover {
+      background-color: #FF6600;
+    }
+
+    /* Settings */
+    .settings-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 102, 0, 0.2);
+      border: 1px solid #FF6600;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+    
+    .settings-button:hover {
+      background: rgba(255, 102, 0, 0.4);
+      transform: rotate(30deg);
+    }
+    
+    .settings-panel {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #FF6600;
+      border-radius: 8px;
+      padding: 15px;
+      width: 250px;
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+      z-index: 100;
+      transform: translateX(300px);
+      transition: transform 0.3s ease;
+    }
+    
+    .settings-title {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      text-align: center;
+      text-shadow: 0 0 5px #FF6600;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #FF6600;
+    }
+    
+    /* Keyboard shortcuts */
+    .keyboard-shortcuts {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #FF6600;
+      border-radius: 8px;
+      padding: 15px;
+      width: 250px;
+      box-shadow: 0  0 20px rgba(255, 102, 0, 0.5);
+      z-index: 100;
+      transform: translateX(-300px);
+      transition: transform 0.3s ease;
+    }
+    
+    .keyboard-title {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      text-align: center;
+      text-shadow: 0 0 5px #FF6600;
+    }
+    
+    .key {
+      background: rgba(255, 102, 0, 0.2);
+      border: 1px solid #FF6600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: bold;
+    }
+    
+    /* Shortcut hint tooltip */
+    .shortcut-hint {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #FF8800;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      font-size: 0.9rem;
+      box-shadow: 0 0 10px rgba(255, 136, 0, 0.4);
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      animation: floatHint 3s ease-in-out infinite;
+      transition: opacity 0.3s, transform 0.3s;
+      opacity: 0.8;
+      cursor: pointer;
+    }
+    
+    .shortcut-hint .key {
+      margin-right: 8px;
+      background: rgba(255, 136, 0, 0.2);
+      border-color: #FF8800;
+      display: inline-block;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* Loading screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, #300800 0%, #150400 60%, #000000 100%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s;
+    }
+
+    .loading-circle {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(255, 100, 0, 0.3);
+      border-top: 4px solid #FF6600;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      color: #FF6600;
+      text-shadow: 0 0 10px #FF8800;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Title proximity effects */
+    @keyframes dramaticPulse {
+      0% {
+        transform: scale(1);
+        filter: brightness(1) hue-rotate(0deg);
+        text-shadow: 
+          0 0 5px rgba(255, 100, 0, 0.9),
+          0 0 10px rgba(255, 80, 0, 0.7),
+          0 0 20px rgba(255, 60, 0, 0.5);
+      }
+      50% {
+        transform: scale(1.4);
+        filter: brightness(1.9) hue-rotate(20deg);
+        text-shadow: 
+          0 0 15px rgba(255, 140, 0, 1),
+          0 0 30px rgba(255, 120, 0, 0.9),
+          0 0 50px rgba(255, 100, 0, 0.8),
+          0 0 70px rgba(255, 80, 0, 0.7),
+          0 0 90px rgba(255, 60, 0, 0.6);
+      }
+      100% {
+        transform: scale(1);
+        filter: brightness(1) hue-rotate(0deg);
+        text-shadow: 
+          0 0 5px rgba(255, 100, 0, 0.9),
+          0 0 10px rgba(255, 80, 0, 0.7),
+          0 0 20px rgba(255, 60, 0, 0.5);
+      }
+    }
+
+    /* Additional aura for title when words are nearby */
+    .title-shield-visible {
+      position: absolute;
+      top: -20px;
+      left: 0;
+      right: 0;
+      bottom: -20px;
+      margin: 0 auto;
+      width: 100%;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle, 
+        rgba(255, 120, 0, 0.4) 0%, 
+        rgba(200, 80, 0, 0.2) 50%,
+        rgba(100, 30, 0, 0) 100%
+      );
+      filter: blur(10px);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .title.word-nearby {
+      animation: dramaticPulse 1.5s infinite;
+    }
+
+    .title-shield-visible.word-nearby {
+      opacity: 1;
+      animation: shieldPulse 1.5s infinite alternate;
+    }
+
+    @keyframes shieldPulse {
+      0% {
+        opacity: 0.3;
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 0.8;
+        transform: scale(1.2);
+      }
+    }
+
+    /* Fire particles */
+    .fire-particle {
+      position: absolute;
+      background-color: #ff6600;
+      border-radius: 50%;
+      opacity: 0.8;
+      filter: blur(1px);
+      box-shadow: 0 0 4px #ff9900;
+      animation: fireParticleAnim 0.6s forwards;
+    }
+
+    @keyframes fireParticleAnim {
+      0% {
+        transform: translateX(0) translateY(0) scale(1);
+        opacity: 0.8;
+      }
+      60% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateX(var(--x)) translateY(var(--y)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* Black flame style */
+    .anime-word.black-flame {
+      color: rgba(180, 180, 220, 0.8);
+      text-shadow: 
+        0 0 4px rgba(20, 20, 40, 1),
+        0 0 8px rgba(40, 40, 80, 0.9),
+        0 0 12px rgba(60, 60, 120, 0.7),
+        0 0 16px rgba(80, 80, 160, 0.5);
+      filter: contrast(1.5);
+    }
+    
+    .anime-word.black-flame.move-1 {
+      animation: floatWord1 15s linear infinite, fadeInOut 15s ease-in-out infinite, blackFireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.black-flame.move-2 {
+      animation: floatWord2 18s linear infinite, fadeInOut 18s ease-in-out infinite, blackFireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.black-flame.move-3 {
+      animation: floatWord3 20s linear infinite, fadeInOut 20s ease-in-out infinite, blackFireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.black-flame.move-4 {
+      animation: floatWord4 22s linear infinite, fadeInOut 22s ease-in-out infinite, blackFireEffect 2s infinite alternate;
+    }
+    
+    .anime-word.black-flame.move-5 {
+      animation: floatWord5 25s linear infinite, fadeInOut 25s ease-in-out infinite, blackFireEffect 2s infinite alternate;
+    }
+    
+    @keyframes blackFireEffect {
+      0%, 100% {
+        text-shadow: 
+          0 0 4px rgba(20, 20, 40, 1),
+          0 0 8px rgba(40, 40, 80, 0.9),
+          0 0 12px rgba(60, 60, 120, 0.7),
+          0 0 16px rgba(80, 80, 160, 0.5);
+      }
+      50% {
+        text-shadow: 
+          0 0 6px rgba(10, 10, 30, 1),
+          0 0 12px rgba(30, 30, 60, 0.9),
+          0 0 18px rgba(50, 50, 100, 0.8),
+          0 0 24px rgba(70, 70, 140, 0.6),
+          0 0 30px rgba(90, 90, 180, 0.4);
+      }
+    }
+
+    .comment-form {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .comment-list {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .comment-item {
+      display: flex;
+      align-items: start;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .settings-panel.visible {
+      transform: translateX(0);
+    }
+    
+    .settings-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    .keyboard-shortcuts.visible {
+      transform: translateX(0);
+    }
+    
+    .keyboard-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .keyboard-list li {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .shortcut-hint:hover {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+    
+    @keyframes floatHint {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    /* Update dramaticPulse animation for fire theme */
+    @keyframes dramaticPulse {
+      0% {
+        transform: scale(1);
+        filter: brightness(1) hue-rotate(0deg);
+        text-shadow: 
+          0 0 5px rgba(255, 100, 0, 0.9),
+          0 0 10px rgba(255, 80, 0, 0.7),
+          0 0 20px rgba(255, 60, 0, 0.5);
+      }
+      50% {
+        transform: scale(1.4);
+        filter: brightness(1.9) hue-rotate(20deg);
+        text-shadow: 
+          0 0 15px rgba(255, 140, 0, 1),
+          0 0 30px rgba(255, 120, 0, 0.9),
+          0 0 50px rgba(255, 100, 0, 0.8),
+          0 0 70px rgba(255, 80, 0, 0.7),
+          0 0 90px rgba(255, 60, 0, 0.6);
+      }
+      100% {
+        transform: scale(1);
+        filter: brightness(1) hue-rotate(0deg);
+        text-shadow: 
+          0 0 5px rgba(255, 100, 0, 0.9),
+          0 0 10px rgba(255, 80, 0, 0.7),
+          0 0 20px rgba(255, 60, 0, 0.5);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Anime words background container -->
+  <div class="anime-word-container" id="animeWordContainer"></div>
+  
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-circle"></div>
+    <div class="loading-text">ロード中...</div>
+  </div>
+
+  <!-- Shortcut Hint -->
+  <div class="shortcut-hint" id="shortcutHint">
+    <span class="key">K</span> <span>Press for shortcuts</span>
+  </div>
+
+  <!-- Settings Button and Panel -->
+  <div class="settings-button" id="settingsButton">⚙️</div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-title">設定 (Settings)</div>
+    <div class="settings-option">
+      <span>Background Image</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="bgToggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="settings-option">
+      <span>Auto-play</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="autoplayToggle" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts -->
+  <div class="keyboard-shortcuts" id="keyboardShortcuts">
+    <div class="keyboard-title">キーボードショートカット</div>
+    <ul class="keyboard-list">
+      <li><span class="key">Space</span> <span>Play/Pause</span></li>
+      <li><span class="key">F</span> <span>Fullscreen</span></li>
+      <li><span class="key">M</span> <span>Mute/Unmute</span></li>
+      <li><span class="key">←</span> <span>Rewind 10s</span></li>
+      <li><span class="key">→</span> <span>Forward 10s</span></li>
+      <li><span class="key">↑</span> <span>Volume Up</span></li>
+      <li><span class="key">↓</span> <span>Volume Down</span></li>
+      <li><span class="key">K</span> <span>Show/Hide Shortcuts</span></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="title-area">
+      <div class="title-shield" id="titleShield"></div>
+      <div class="title-shield-visible" id="titleShieldVisible"></div>
+      <h1 class="title">インタラクティブビデオプレーヤー</h1>
+      <h2 class="subtitle">Interactive Video Player by a TRUE Vibe Coder</h2>
+    </div>
+    
+    <div class="video-wrapper">
+      <video id="video" src="Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4" autoplay muted></video>
+      <div class="controls">
+        <div class="control-row">
+          <button class="control-button" id="playButton">Play</button>
+          <div class="progress" id="progressBar">
+            <div class="progress-bar" id="progress"></div>
+            <!-- Timestamp markers will be added here dynamically -->
+          </div>
+          <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+        </div>
+        <div class="control-row">
+          <div class="volume-container">
+            <button class="control-button" id="muteButton">🔊</button>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+          </div>
+          <select class="speed-select" id="speedSelect">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+          <button class="control-button" id="fullscreenButton">Fullscreen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-container">
+      <div class="comments-title">
+        <span>コメント (Comments)</span>
+        <button class="control-button" id="addTimestampComment">Add Comment at Current Time</button>
+      </div>
+      <div class="comment-form">
+        <input type="text" class="comment-input" id="commentInput" placeholder="Enter your comment...">
+        <button class="control-button" id="submitComment">Submit</button>
+      </div>
+      <div class="comment-list" id="commentList">
+        <!-- Comments will be added here dynamically -->
+      </div>
+    </div>
+    
+    <!-- Footer Section with credits and social links -->
+    <div style="margin-top: 60px; margin-bottom: 20px; background-color: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,102,0,0.3); text-align: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+      <!-- Made with vibe by Areeb footer -->
+      <div id="footerTitle" style="color: #FF6600; font-size: 16px; font-weight: bold; text-shadow: 0 0 5px rgba(255, 102, 0, 0.5); margin-bottom: 20px; cursor: pointer; display: inline-block;">
+        ⚡ Made with vibe by Areeb ⚡
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <a id="githubLink" href="https://github.com/AreebAbdulGhani" target="_blank" class="destroyable-link" style="color: #FF6600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; text-shadow: 0 0 3px rgba(255, 102, 0, 0.3); transition: all 0.3s ease; padding: 8px 15px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); position: relative; cursor: pointer;" onmouseover="this.style.background='rgba(255, 102, 0, 0.2)'; this.style.transform='translateY(-2px)'; this.style.textShadow='0 0 8px rgba(255, 102, 0, 0.8)';" onmouseout="this.style.background='rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(0)'; this.style.textShadow='0 0 3px rgba(255, 102, 0, 0.3)';">
+          <span style="margin-right: 3px; position: relative;">🌐 GitHub</span>
+        </a>
+        <a id="linkedinLink" href="https://www.linkedin.com/in/areeb-abdul-ghani-aaa46a1b7/" target="_blank" class="destroyable-link" style="color: #FF6600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; text-shadow: 0 0 3px rgba(255, 102, 0, 0.3); transition: all 0.3s ease; padding: 8px 15px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); position: relative; cursor: pointer;" onmouseover="this.style.background='rgba(255, 102, 0, 0.2)'; this.style.transform='translateY(-2px)'; this.style.textShadow='0 0 8px rgba(255, 102, 0, 0.8)';" onmouseout="this.style.background='rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(0)'; this.style.textShadow='0 0 3px rgba(255, 102, 0, 0.3)';">
+          <span style="margin-right: 3px; position: relative;">💼 LinkedIn</span>
+        </a>
+        <a id="twitterLink" href="https://x.com/AreebAbdulGhan1" target="_blank" class="destroyable-link" style="color: #FF6600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; text-shadow: 0 0 3px rgba(255, 102, 0, 0.3); transition: all 0.3s ease; padding: 8px 15px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); position: relative; cursor: pointer;" onmouseover="this.style.background='rgba(255, 102, 0, 0.2)'; this.style.transform='translateY(-2px)'; this.style.textShadow='0 0 8px rgba(255, 102, 0, 0.8)';" onmouseout="this.style.background='rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(0)'; this.style.textShadow='0 0 3px rgba(255, 102, 0, 0.3)';">
+          <span style="margin-right: 3px; position: relative;">🐦 Twitter/X</span>
+        </a>
+        <a id="emailLink" href="mailto:areebghani359@gmail.com" class="destroyable-link" style="color: #FF6600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; text-shadow: 0 0 3px rgba(255, 102, 0, 0.3); transition: all 0.3s ease; padding: 8px 15px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); position: relative; cursor: pointer;" onmouseover="this.style.background='rgba(255, 102, 0, 0.2)'; this.style.transform='translateY(-2px)'; this.style.textShadow='0 0 8px rgba(255, 102, 0, 0.8)';" onmouseout="this.style.background='rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(0)'; this.style.textShadow='0 0 3px rgba(255, 102, 0, 0.3)';">
+          <span style="margin-right: 3px; position: relative;">✉️ Email</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Function to try playing the video - can be called multiple times
+      function tryPlayVideo() {
+        if (video.paused) {
+          video.play().then(() => {
+            playButton.textContent = 'Pause';
+          }).catch(err => {
+            console.log('Autoplay prevented:', err);
+          });
+        }
+      }
+      
+      // Try autoplay when user interacts with the page
+      document.addEventListener('click', function() {
+        tryPlayVideo();
+      }, { once: true });
+      
+      // References to DOM elements
+      const animeWordContainer = document.getElementById('animeWordContainer');
+      const titleArea = document.querySelector('.title-area');
+      const titleElement = document.querySelector('.title');
+      const titleShield = document.getElementById('titleShield');
+      const titleShieldVisible = document.getElementById('titleShieldVisible');
+      
+      // Title bounds for proximity detection
+      let titleBounds = {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        centerX: 0,
+        centerY: 0,
+        width: 0,
+        height: 0
+      };
+      
+      // Update title bounds on window resize
+      function updateTitleBounds() {
+        if (titleElement) {
+          const rect = titleElement.getBoundingClientRect();
+          titleBounds = {
+            top: rect.top - 60,
+            left: rect.left - 60,
+            bottom: rect.bottom + 60,
+            right: rect.right + 60,
+            centerX: rect.left + rect.width / 2,
+            centerY: rect.top + rect.height / 2,
+            width: rect.width + 120,
+            height: rect.height + 120
+          };
+        }
+      }
+      
+      // Call once for initial calculation
+      updateTitleBounds();
+      
+      // Update bounds when window is resized
+      window.addEventListener('resize', updateTitleBounds);
+      
+      // Generate initial words - increased quantity for a denser effect
+      for (let i = 0; i < 75; i++) {
+        setTimeout(() => {
+          addAnimeWord();
+        }, i * 100);
+      }
+      
+      // Add words periodically to maintain density - increased frequency
+      setInterval(addAnimeWord, 500);
+
+      // Generate black flame words separately
+      for (let i = 0; i < 40; i++) {
+        setTimeout(() => {
+          addBlackFlameWord();
+        }, i * 300 + 100); // Slight offset to avoid all words appearing at once
+      }
+      
+      // Keep adding black flame words periodically
+      setInterval(addBlackFlameWord, 1000);
+      
+      // Function to add black flame words
+      function addBlackFlameWord() {
+        const darkJapaneseWords = [
+          "闇", "暗黒", "影", "混沌", "虚無", "死", "恐怖", "絶望", "悪夢",
+          "地獄", "亡霊", "怨念", "呪い", "魔界", "冥界", "幽霊", "悪魔",
+          "恐れ", "憎悪", "禁忌", "崩壊", "終焉", "深淵", "無", "破滅", 
+          "消滅", "絶命", "墓", "運命", "宿命", "災い", "血", "骨", "闘争",
+          "裏切り", "戦争", "罪", "罰", "復讐", "迷宮", "孤独", "奈落", 
+          "鎖", "牢獄", "監禁", "拷問", "悲鳴", "絶叫", "悲劇"
+        ];
+        
+        const word = document.createElement('div');
+        // Use black-flame class
+        word.className = 'anime-word black-flame ' +
+                        'move-' + (Math.floor(Math.random() * 5) + 1);
+        
+        // Get a random dark word
+        const randomWord = darkJapaneseWords[Math.floor(Math.random() * darkJapaneseWords.length)];
+        word.textContent = randomWord;
+        
+        // Random position
+        const posX = Math.random() * window.innerWidth;
+        const posY = Math.random() * window.innerHeight;
+        
+        word.style.left = posX + 'px';
+        word.style.top = posY + 'px';
+        word.style.opacity = '0'; // Start invisible
+        
+        // Size variation - slightly larger for dramatic effect
+        const size = 1.2 + Math.random() * 1.8;
+        word.style.fontSize = (size * 2) + 'rem';
+        
+        // Add it to container
+        animeWordContainer.appendChild(word);
+        
+        // Function to check if word is near title
+        function checkProximityToTitle() {
+          if (!word || !word.isConnected) return;
+          
+          const wordRect = word.getBoundingClientRect();
+          const wordX = wordRect.left + wordRect.width / 2;
+          const wordY = wordRect.top + wordRect.height / 2;
+          
+          // Check if word is within the title area
+          if (
+            wordX > titleBounds.left && 
+            wordX < titleBounds.right && 
+            wordY > titleBounds.top && 
+            wordY < titleBounds.bottom
+          ) {
+            // Word should be destroyed with explosion effect - customized for black flame
+            destroyBlackFlameWord(word, proximityInterval);
+            
+            // Create a visual effect on the title to show the interaction
+            titleElement.style.animation = 'none';
+            setTimeout(() => {
+              titleElement.style.animation = 'fireGlow 3s infinite alternate';
+                          const pulse = document.createElement('div');
+            pulse.style.position = 'absolute';
+            pulse.style.left = titleBounds.centerX + 'px';
+            pulse.style.top = titleBounds.centerY + 'px';
+            pulse.style.transform = 'translate(-50%, -50%)';
+            pulse.style.width = '100%';
+            pulse.style.height = '100%';
+            pulse.style.borderRadius = '50%';
+            pulse.style.background = 'radial-gradient(circle, rgba(255,150,0,0.4) 0%, rgba(255,100,0,0.2) 60%, rgba(255,50,0,0) 100%)';
+            pulse.style.zIndex = '3'; // Lower z-index to be under UI elements
+            pulse.style.pointerEvents = 'none';
+            pulse.style.animation = 'rippleEffect 0.8s forwards';
+            document.body.appendChild(pulse);
+              
+              setTimeout(() => {
+                if (pulse && pulse.parentNode) {
+                  pulse.parentNode.removeChild(pulse);
+                }
+              }, 800);
+            }, 10);
+            
+            return true;
+          }
+          
+          return false;
+        }
+        
+        // Continuously check proximity
+        const proximityInterval = setInterval(checkProximityToTitle, 100);
+        
+        // Click effect for this word - UPDATED TO DESTROY WORD
+        word.addEventListener('click', function(e) {
+          // Create a more dramatic effect for clicks
+          const effectType = Math.floor(Math.random() * 3);
+          
+          // Create the visual effect first
+          if (effectType === 0) {
+            createBlackFlameBurst(this, true); // Enhanced version
+          } else if (effectType === 1) {
+            createRippleEffect(this, true); // Enhanced version
+          } else {
+            createGlitchEffect(this, true); // Enhanced version
+          }
+          
+          // Then destroy the word with extra particles
+          destroyBlackFlameWord(this, proximityInterval, true); // true indicates click-based destruction
+        });
+        
+        // Remove after a while to save resources
+        setTimeout(() => {
+          if (word.parentNode) {
+            word.parentNode.removeChild(word);
+            clearInterval(proximityInterval);
+          }
+        }, 45000);
+      }
+      
+      // Generate anime words in background - updated to be balanced with black flame words
+      function addAnimeWord() {
+        const japaneseWords = [
+          "サムライ", "忍者", "魔法", "戦士", "ドラゴン", "勇者", "魔女", "妖精", "剣", "盾",
+          "冒険", "友情", "勇気", "希望", "光", "輝き", "未来", "心", "力", "時間",
+          "火", "水", "風", "地", "雷", "氷", "星", "月", "太陽", "宇宙", 
+          "神", "天使", "精霊", "竜", "魂", "奇跡", "伝説", "英雄", "王子", "姫",
+          "勝利", "平和", "愛", "喜び", "笑顔", "輝き", "命", "生", "夢", "現実",
+          "真実", "正義", "幻想", "騎士", "魔王", "怪物", "ロボット", "機械", "旅",
+          "城", "森", "海", "山", "空", "大地", "異世界", "秘密", "謎", "秘宝",
+          "財宝", "武器", "魔法陣", "呪文", "結界", "封印", "解放", "変身", "合体", "必殺技"
+        ];
+        
+        const word = document.createElement('div');
+        word.className = 'anime-word ' + 
+                        (Math.random() > 0.5 ? 'fire' : 'glow') + ' ' +
+                        'move-' + (Math.floor(Math.random() * 5) + 1);
+        
+        // Get a random word
+        const randomWord = japaneseWords[Math.floor(Math.random() * japaneseWords.length)];
+        word.textContent = randomWord;
+        
+        // Random position
+        const posX = Math.random() * window.innerWidth;
+        const posY = Math.random() * window.innerHeight;
+        
+        word.style.left = posX + 'px';
+        word.style.top = posY + 'px';
+        word.style.opacity = '0'; // Start invisible
+        
+        // Size variation
+        const size = 1 + Math.random() * 1.5;
+        word.style.fontSize = (size * 2) + 'rem';
+        
+        // Add it to container
+        animeWordContainer.appendChild(word);
+        
+        // Function to check if word is near title
+        function checkProximityToTitle() {
+          if (!word || !word.isConnected) return;
+          
+          const wordRect = word.getBoundingClientRect();
+          const wordX = wordRect.left + wordRect.width / 2;
+          const wordY = wordRect.top + wordRect.height / 2;
+          
+          // Check if word is within the title area
+          if (
+            wordX > titleBounds.left && 
+            wordX < titleBounds.right && 
+            wordY > titleBounds.top && 
+            wordY < titleBounds.bottom
+          ) {
+            // Word should be destroyed with explosion effect
+            destroyWord(word, proximityInterval);
+            return true;
+          }
+          
+          return false;
+        }
+        
+        // Continuously check proximity
+        const proximityInterval = setInterval(checkProximityToTitle, 100);
+        
+        // Click effect for this word - UPDATED TO DESTROY WORD
+        word.addEventListener('click', function(e) {
+          // Create a more dramatic effect for clicks
+          const effectType = Math.floor(Math.random() * 3);
+          
+          // Create the visual effect first
+          if (effectType === 0) {
+            createPowerBurst(this, true); // Enhanced version
+          } else if (effectType === 1) {
+            createRippleEffect(this, true); // Enhanced version
+          } else {
+            createGlitchEffect(this, true); // Enhanced version
+          }
+          
+          // Then destroy the word with extra particles
+          destroyWord(this, proximityInterval, true); // true indicates click-based destruction
+        });
+        
+        // Remove after a while to save resources
+        setTimeout(() => {
+          if (word.parentNode) {
+            word.parentNode.removeChild(word);
+            clearInterval(proximityInterval);
+          }
+        }, 45000);
+      }
+      
+      // Create power burst effect when word is clicked
+      function createPowerBurst(wordElement, enhanced = false) {
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // Create burst container
+        const burstContainer = document.createElement('div');
+        burstContainer.style.position = 'absolute';
+        burstContainer.style.left = x + 'px';
+        burstContainer.style.top = y + 'px';
+        burstContainer.style.transform = 'translate(-50%, -50%)';
+        burstContainer.style.width = '100px';
+        burstContainer.style.height = '100px';
+        burstContainer.style.borderRadius = '50%';
+        burstContainer.style.background = 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0) 70%)';
+        burstContainer.style.boxShadow = '0 0 30px rgba(255, 255, 255, 0.8)';
+        burstContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        burstContainer.style.pointerEvents = 'none';
+        
+        // Enhanced effect for click destruction
+        if (enhanced) {
+          burstContainer.style.animation = 'powerBurst 1.2s forwards';
+          burstContainer.style.width = '150px';
+          burstContainer.style.height = '150px';
+          burstContainer.style.boxShadow = '0 0 50px rgba(255, 255, 255, 0.9), 0 0 80px rgba(255, 200, 100, 0.7)';
+          burstContainer.style.filter = 'brightness(1.5) contrast(1.2)';
+        } else {
+          burstContainer.style.animation = 'powerBurst 0.8s forwards';
+        }
+        
+        document.body.appendChild(burstContainer);
+        
+        // Create particles
+        const particleContainer = document.createElement('div');
+        particleContainer.className = 'anime-particles';
+        particleContainer.style.left = x + 'px';
+        particleContainer.style.top = y + 'px';
+        particleContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(particleContainer);
+        
+        // More particles for enhanced effect
+        const particleCount = enhanced ? 40 : 20;
+        
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Size variation - bigger for enhanced
+          const size = 2 + Math.random() * (enhanced ? 6 : 4);
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random angle and distance - wider spread for enhanced
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 50 + Math.random() * (enhanced ? 120 : 80);
+          
+          // Calculate trajectory
+          const xOffset = Math.cos(angle) * distance;
+          const yOffset = Math.sin(angle) * distance;
+          
+          // Set animation variables
+          particle.style.setProperty('--x', xOffset + 'px');
+          particle.style.setProperty('--y', yOffset + 'px');
+          
+          // Color variation based on word type
+          if (wordElement.classList.contains('fire')) {
+            particle.style.background = `hsl(${20 + Math.random() * 40}, 100%, ${70 + Math.random() * 30}%)`;
+          } else {
+            particle.style.background = `hsl(${280 + Math.random() * 60}, 100%, ${70 + Math.random() * 30}%)`;
+          }
+          
+          // Animation duration variation - longer for enhanced
+          particle.style.animation = `particleAnimation ${0.5 + Math.random() * (enhanced ? 1.0 : 0.5)}s forwards`;
+          
+          particleContainer.appendChild(particle);
+        }
+        
+        // Clean up after animation
+        setTimeout(() => {
+          if (burstContainer && burstContainer.parentNode) {
+            burstContainer.parentNode.removeChild(burstContainer);
+          }
+          if (particleContainer && particleContainer.parentNode) {
+            particleContainer.parentNode.removeChild(particleContainer);
+          }
+        }, enhanced ? 1500 : 1000);
+      }
+      
+      // Create ripple effect when word is clicked
+      function createRippleEffect(wordElement, enhanced = false) {
+        const ripple = wordElement.cloneNode(true);
+        ripple.style.pointerEvents = 'none';
+        ripple.style.zIndex = '2'; // Lower z-index to be under UI elements
+        ripple.style.animation = enhanced ? 'rippleEffect 1.5s forwards' : 'rippleEffect 1s forwards';
+        ripple.style.borderRadius = '50%';
+        
+        // Enhanced ripple effect
+        if (enhanced) {
+          // Create multiple ripples for enhanced effect
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              const extraRipple = wordElement.cloneNode(true);
+              extraRipple.style.pointerEvents = 'none';
+              extraRipple.style.zIndex = '2'; // Lower z-index to be under UI elements
+              extraRipple.style.animation = `rippleEffect ${1.2 - i * 0.2}s forwards`;
+              extraRipple.style.borderRadius = '50%';
+              extraRipple.style.filter = `hue-rotate(${i * 60}deg) brightness(1.${i+3})`;
+              document.body.appendChild(extraRipple);
+              
+              setTimeout(() => {
+                if (extraRipple && extraRipple.parentNode) {
+                  extraRipple.parentNode.removeChild(extraRipple);
+                }
+              }, 1500);
+            }, i * 150);
+          }
+        }
+        
+        // Get position
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        document.body.appendChild(ripple);
+        
+        // Make the original word glow intensely
+        const originalEffect = wordElement.classList.contains('fire') ? 'fire' : 'glow';
+        const originalClass = wordElement.className;
+        
+        if (originalEffect === 'fire') {
+          wordElement.style.textShadow = 
+            '0 0 10px rgba(255, 100, 0, 1), ' +
+            '0 0 20px rgba(255, 150, 0, 0.9), ' +
+            '0 0 30px rgba(255, 200, 0, 0.7), ' +
+            '0 0 40px rgba(255, 255, 0, 0.5)';
+        } else {
+          wordElement.style.textShadow = 
+            '0 0 10px rgba(255, 0, 255, 1), ' +
+            '0 0 20px rgba(255, 0, 255, 0.9), ' +
+            '0 0 30px rgba(255, 0, 255, 0.7), ' +
+            '0 0 40px rgba(255, 0, 255, 0.5)';
+        }
+        
+        wordElement.style.filter = 'brightness(1.5)';
+        
+        // Reset after animation
+        setTimeout(() => {
+          if (ripple && ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+          }
+          wordElement.style.textShadow = '';
+          wordElement.style.filter = '';
+        }, enhanced ? 1500 : 1000);
+      }
+      
+      // Create glitch effect when word is clicked
+      function createGlitchEffect(wordElement, enhanced = false) {
+        const glitchElement = wordElement.cloneNode(true);
+        glitchElement.style.pointerEvents = 'none';
+        glitchElement.style.zIndex = '2'; // Lower z-index to be under UI elements
+        glitchElement.style.animation = 'glitchEffect 1s forwards';
+        
+        // Get position
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        document.body.appendChild(glitchElement);
+        
+        // Make the original word flash
+        const originalVisibility = wordElement.style.visibility;
+        wordElement.style.visibility = 'hidden';
+        
+        // Create a few copies for disjointed glitch effect
+        for (let i = 0; i < 3; i++) {
+          const glitchCopy = wordElement.cloneNode(true);
+          glitchCopy.style.position = 'absolute';
+          glitchCopy.style.left = x + 'px';
+          glitchCopy.style.top = y + 'px';
+          glitchCopy.style.transform = 'translate(-50%, -50%)';
+          glitchCopy.style.zIndex = '2'; // Lower z-index to be under UI elements
+          glitchCopy.style.pointerEvents = 'none';
+          
+          if (i === 0) {
+            glitchCopy.style.color = 'rgba(255, 0, 0, 0.8)';
+            glitchCopy.style.filter = 'blur(1px)';
+            glitchCopy.style.transform = 'translate(-52%, -50%)';
+          } else if (i === 1) {
+            glitchCopy.style.color = 'rgba(0, 255, 255, 0.8)';
+            glitchCopy.style.filter = 'blur(1px)';
+            glitchCopy.style.transform = 'translate(-48%, -50%)';
+          } else {
+            glitchCopy.style.color = 'rgba(255, 255, 255, 0.9)';
+            glitchCopy.style.filter = 'blur(0.5px)';
+          }
+          
+          document.body.appendChild(glitchCopy);
+          
+          // Glitch movement
+          let glitchInterval = setInterval(() => {
+            const offsetX = (Math.random() - 0.5) * 10;
+            const offsetY = (Math.random() - 0.5) * 10;
+            glitchCopy.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+          }, 50);
+          
+          // Clean up interval
+          setTimeout(() => {
+            clearInterval(glitchInterval);
+            if (glitchCopy && glitchCopy.parentNode) {
+              glitchCopy.parentNode.removeChild(glitchCopy);
+            }
+          }, 800);
+        }
+        
+        // Reset after animation
+        setTimeout(() => {
+          if (glitchElement && glitchElement.parentNode) {
+            glitchElement.parentNode.removeChild(glitchElement);
+          }
+          wordElement.style.visibility = originalVisibility;
+        }, 1000);
+      }
+
+      // Function to destroy a word with explosion effect
+      function destroyWord(wordElement, proximityInterval, isClickDestroy = false) {
+        // Stop checking proximity
+        if (proximityInterval) {
+          clearInterval(proximityInterval);
+        }
+        
+        // Apply explosion animation
+        wordElement.style.animation = 'explode 0.6s forwards';
+        
+        // Create explosion effect with particles
+        createExplosionEffect(wordElement);
+        
+        // Create a visual effect on the title to show the interaction
+        if (!isClickDestroy) { // Only show title effect for proximity destroys, not clicks
+          titleElement.style.animation = 'none';
+          setTimeout(() => {
+            titleElement.style.animation = 'fireGlow 3s infinite alternate';
+            const pulse = document.createElement('div');
+            pulse.style.position = 'absolute';
+            pulse.style.left = titleBounds.centerX + 'px';
+            pulse.style.top = titleBounds.centerY + 'px';
+            pulse.style.transform = 'translate(-50%, -50%)';
+            pulse.style.width = '100%';
+            pulse.style.height = '100%';
+            pulse.style.borderRadius = '50%';
+            pulse.style.background = 'radial-gradient(circle, rgba(255,150,0,0.4) 0%, rgba(255,100,0,0.2) 60%, rgba(255,50,0,0) 100%)';
+            pulse.style.zIndex = '3'; // Lower z-index to be under UI elements
+            pulse.style.pointerEvents = 'none';
+            pulse.style.animation = 'rippleEffect 0.8s forwards';
+            document.body.appendChild(pulse);
+            
+            setTimeout(() => {
+              if (pulse && pulse.parentNode) {
+                pulse.parentNode.removeChild(pulse);
+              }
+            }, 800);
+          }, 10);
+        }
+        
+        // Remove the word after animation completes
+        setTimeout(() => {
+          if (wordElement.parentNode) {
+            wordElement.parentNode.removeChild(wordElement);
+          }
+        }, 600);
+      }
+      
+      // Create explosion effect with particles
+      function createExplosionEffect(wordElement) {
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // Create particle container
+        const particleContainer = document.createElement('div');
+        particleContainer.className = 'anime-particles';
+        particleContainer.style.left = x + 'px';
+        particleContainer.style.top = y + 'px';
+        particleContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(particleContainer);
+        
+        // Create explosion particles - more particles for a bigger effect
+        const particleCount = 25 + Math.floor(Math.random() * 15);
+        
+        for (let i = 0; i < particleCount; i++) {
+          // Alternate between regular and fire particles
+          const particle = document.createElement('div');
+          particle.className = i % 2 === 0 ? 'particle' : 'fire-particle';
+          
+          // Size variation - bigger particles
+          const size = 2 + Math.random() * 4;
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random angle and distance - wider spread
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 40 + Math.random() * 80;
+          
+          // Calculate trajectory
+          const xOffset = Math.cos(angle) * distance;
+          const yOffset = Math.sin(angle) * distance;
+          
+          // Set animation variables
+          particle.style.setProperty('--x', xOffset + 'px');
+          particle.style.setProperty('--y', yOffset + 'px');
+          
+          // Fire color particles with variation
+          if (i % 2 === 0) {
+            const hue = 20 + Math.random() * 40;
+            particle.style.background = `hsl(${hue}, 100%, ${70 + Math.random() * 30}%)`;
+            particle.style.boxShadow = `0 0 ${2 + Math.random() * 4}px hsl(${hue}, 100%, 50%)`;
+            
+            // Animation duration variation
+            particle.style.animation = `particleAnimation ${0.3 + Math.random() * 0.5}s forwards`;
+          } else {
+            // Fire particles already have their style
+            const fireSize = 3 + Math.random() * 5;
+            particle.style.width = fireSize + 'px';
+            particle.style.height = fireSize + 'px';
+          }
+          
+          particleContainer.appendChild(particle);
+        }
+        
+        // Create a flash effect
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.left = x + 'px';
+        flash.style.top = y + 'px';
+        flash.style.transform = 'translate(-50%, -50%)';
+        flash.style.width = '40px';
+        flash.style.height = '40px';
+        flash.style.borderRadius = '50%';
+        flash.style.background = 'radial-gradient(circle, rgba(255,255,230,0.9) 0%, rgba(255,200,100,0.5) 60%, rgba(255,150,0,0) 100%)';
+        flash.style.filter = 'blur(2px)';
+        flash.style.opacity = '1';
+        flash.style.transition = 'all 0.4s ease-out';
+        flash.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(flash);
+        
+        // Expand and fade out the flash
+        setTimeout(() => {
+          flash.style.width = '100px';
+          flash.style.height = '100px';
+          flash.style.opacity = '0';
+        }, 10);
+        
+        // Clean up particles and flash after animation
+        setTimeout(() => {
+          if (particleContainer && particleContainer.parentNode) {
+            particleContainer.parentNode.removeChild(particleContainer);
+          }
+          if (flash && flash.parentNode) {
+            flash.parentNode.removeChild(flash);
+          }
+        }, 800);
+      }
+
+      // Create dark explosion effect
+      function createDarkExplosionEffect(wordElement) {
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // Create particle container
+        const particleContainer = document.createElement('div');
+        particleContainer.className = 'anime-particles';
+        particleContainer.style.left = x + 'px';
+        particleContainer.style.top = y + 'px';
+        particleContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(particleContainer);
+        
+        // Create dark explosion particles
+        const particleCount = 25 + Math.floor(Math.random() * 15);
+        
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Size variation
+          const size = 2 + Math.random() * 4;
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random angle and distance
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 40 + Math.random() * 80;
+          
+          // Calculate trajectory
+          const xOffset = Math.cos(angle) * distance;
+          const yOffset = Math.sin(angle) * distance;
+          
+          // Set animation variables
+          particle.style.setProperty('--x', xOffset + 'px');
+          particle.style.setProperty('--y', yOffset + 'px');
+          
+          // Dark blue/purple particles
+          const hue = 230 + Math.random() * 40;
+          particle.style.background = `hsl(${hue}, 70%, ${40 + Math.random() * 40}%)`;
+          particle.style.boxShadow = `0 0 ${2 + Math.random() * 4}px hsl(${hue}, 90%, 50%)`;
+          
+          // Animation duration variation
+          particle.style.animation = `particleAnimation ${0.3 + Math.random() * 0.5}s forwards`;
+          
+          particleContainer.appendChild(particle);
+        }
+        
+        // Create a dark flash effect
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.left = x + 'px';
+        flash.style.top = y + 'px';
+        flash.style.transform = 'translate(-50%, -50%)';
+        flash.style.width = '40px';
+        flash.style.height = '40px';
+        flash.style.borderRadius = '50%';
+        flash.style.background = 'radial-gradient(circle, rgba(100,100,180,0.9) 0%, rgba(50,50,120,0.5) 60%, rgba(20,20,80,0) 100%)';
+        flash.style.filter = 'blur(3px)';
+        flash.style.opacity = '1';
+        flash.style.transition = 'all 0.4s ease-out';
+        flash.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(flash);
+        
+        // Expand and fade out the flash
+        setTimeout(() => {
+          flash.style.width = '100px';
+          flash.style.height = '100px';
+          flash.style.opacity = '0';
+        }, 10);
+        
+        // Clean up particles and flash after animation
+        setTimeout(() => {
+          if (particleContainer && particleContainer.parentNode) {
+            particleContainer.parentNode.removeChild(particleContainer);
+          }
+          if (flash && flash.parentNode) {
+            flash.parentNode.removeChild(flash);
+          }
+        }, 800);
+      }
+
+      // Loading screen
+      const loadingScreen = document.getElementById('loadingScreen');
+      
+      // Initialize video controls
+      const video = document.getElementById('video');
+      const playButton = document.getElementById('playButton');
+      const fullscreenButton = document.getElementById('fullscreenButton');
+      const progressBar = document.getElementById('progressBar');
+      const progress = document.getElementById('progress');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const muteButton = document.getElementById('muteButton');
+      const volumeSlider = document.getElementById('volumeSlider');
+      const speedSelect = document.getElementById('speedSelect');
+      
+      // Add event listeners to keep play/pause button state in sync with video state
+      video.addEventListener('play', function() {
+        playButton.textContent = 'Pause';
+      });
+      
+      video.addEventListener('pause', function() {
+        playButton.textContent = 'Play';
+      });
+      
+      video.addEventListener('ended', function() {
+        playButton.textContent = 'Play';
+      });
+      
+      // Comments elements
+      const commentInput = document.getElementById('commentInput');
+      const submitComment = document.getElementById('submitComment');
+      const commentList = document.getElementById('commentList');
+      const addTimestampComment = document.getElementById('addTimestampComment');
+      
+      // Comments array to store all comments
+      let comments = [];
+      
+      // Format time to MM:SS
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        seconds = Math.floor(seconds % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      }
+      
+      // Play/Pause button
+      playButton.addEventListener('click', function() {
+        // Check the actual state of the video before toggling
+        if (video.paused || video.ended || video.currentTime === 0) {
+          // Ensure play() is called and button state is updated immediately
+          playButton.textContent = 'Pause';
+          video.play().catch(err => {
+            // If play fails, revert the button text
+            console.log('Play prevented:', err);
+            playButton.textContent = 'Play';
+          });
+        } else {
+          // Ensure pause() is called and button state is updated immediately
+          playButton.textContent = 'Play';
+          video.pause();
+        }
+      });
+      
+      // Fullscreen button
+      fullscreenButton.addEventListener('click', function() {
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      });
+      
+      // Progress bar
+      video.addEventListener('timeupdate', function() {
+        const percentage = (video.currentTime / video.duration) * 100;
+        progress.style.width = percentage + '%';
+        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      });
+      
+      // Click on progress bar
+      progressBar.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+      });
+      
+      // Volume controls
+      muteButton.addEventListener('click', function() {
+        video.muted = !video.muted;
+        if (video.muted) {
+          muteButton.textContent = '🔇';
+          volumeSlider.value = 0;
+        } else {
+          muteButton.textContent = '🔊';
+          volumeSlider.value = video.volume;
+        }
+      });
+      
+      volumeSlider.addEventListener('input', function() {
+        video.volume = this.value;
+        video.muted = (this.value === 0);
+        muteButton.textContent = (this.value === 0) ? '🔇' : '🔊';
+      });
+      
+      // Playback speed
+      speedSelect.addEventListener('change', function() {
+        video.playbackRate = this.value;
+      });
+      
+      // Add comment with timestamp
+      function addComment(text, timestamp = null) {
+        if (!text.trim()) return;
+        
+        const time = timestamp !== null ? timestamp : video.currentTime;
+        const comment = {
+          text: text,
+          timestamp: time,
+          id: Date.now()
+        };
+        
+        comments.push(comment);
+        renderComments();
+        addTimestampMarker(comment);
+        commentInput.value = '';
+      }
+      
+      // Add timestamp marker to progress bar
+      function addTimestampMarker(comment) {
+        const marker = document.createElement('div');
+        marker.className = 'timestamp-marker';
+        const position = (comment.timestamp / video.duration) * 100;
+        marker.style.left = `${position}%`;
+        marker.title = `${formatTime(comment.timestamp)}: ${comment.text}`;
+        marker.dataset.timestamp = comment.timestamp;
+        
+        marker.addEventListener('click', function() {
+          video.currentTime = comment.timestamp;
+        });
+        
+        progressBar.appendChild(marker);
+      }
+      
+      // Render all comments
+      function renderComments() {
+        // Sort comments by timestamp
+        comments.sort((a, b) => a.timestamp - b.timestamp);
+        
+        // Clear existing comments
+        commentList.innerHTML = '';
+        
+        // Add all comments to the list
+        comments.forEach(comment => {
+          const commentElement = document.createElement('div');
+          commentElement.className = 'comment-item';
+          commentElement.innerHTML = `
+            <span class="comment-timestamp" data-timestamp="${comment.timestamp}">${formatTime(comment.timestamp)}</span>
+            <span>${comment.text}</span>
+          `;
+          
+          // Add click event to timestamp
+          commentElement.querySelector('.comment-timestamp').addEventListener('click', function() {
+            video.currentTime = comment.timestamp;
+          });
+          
+          commentList.appendChild(commentElement);
+        });
+      }
+      
+      // Event listeners for comments
+      submitComment.addEventListener('click', function() {
+        addComment(commentInput.value);
+      });
+      
+      commentInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addComment(this.value);
+        }
+      });
+      
+      addTimestampComment.addEventListener('click', function() {
+        commentInput.focus();
+        commentInput.value = `[${formatTime(video.currentTime)}] `;
+      });
+      
+      // Settings panel
+      const settingsButton = document.getElementById('settingsButton');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const bgToggle = document.getElementById('bgToggle');
+      const autoplayToggle = document.getElementById('autoplayToggle');
+      
+      // Toggle settings panel
+      settingsButton.addEventListener('click', function() {
+        settingsPanel.classList.toggle('visible');
+      });
+      
+      // Background toggle
+      bgToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.body.classList.add('bg-image');
+        } else {
+          document.body.classList.remove('bg-image');
+        }
+      });
+      
+      // Autoplay toggle
+      autoplayToggle.addEventListener('change', function() {
+        if (this.checked) {
+          video.autoplay = true;
+          if (video.paused || video.ended) {
+            // Use the Promise-based play method to handle browser restrictions
+            video.play().then(() => {
+              playButton.textContent = 'Pause';
+            }).catch(err => {
+              console.log('Play prevented by browser:', err);
+              // Some browsers require user interaction first
+              this.checked = false;
+            });
+          }
+        } else {
+          video.autoplay = false;
+        }
+      });
+
+      // Keyboard shortcuts
+      const keyboardShortcuts = document.getElementById('keyboardShortcuts');
+      let keyboardShortcutsVisible = false;
+      const shortcutHint = document.getElementById('shortcutHint');
+      
+      // Toggle keyboard shortcuts panel
+      function toggleKeyboardShortcuts() {
+        keyboardShortcutsVisible = !keyboardShortcutsVisible;
+        if (keyboardShortcutsVisible) {
+          keyboardShortcuts.classList.add('visible');
+          // Hide the hint when shortcuts are visible
+          shortcutHint.style.opacity = '0';
+        } else {
+          keyboardShortcuts.classList.remove('visible');
+          // Show the hint again when shortcuts are hidden
+          setTimeout(() => {
+            shortcutHint.style.opacity = '0.8';
+          }, 1000);
+        }
+      }
+      
+      // Click on shortcut hint shows the shortcuts
+      shortcutHint.addEventListener('click', function() {
+        if (!keyboardShortcutsVisible) {
+          toggleKeyboardShortcuts();
+        }
+      });
+
+      // Show keyboard shortcuts initially and hide after 5 seconds
+      setTimeout(() => {
+        toggleKeyboardShortcuts();
+        setTimeout(() => {
+          if (keyboardShortcutsVisible) {
+            toggleKeyboardShortcuts();
+          }
+        }, 5000);
+      }, 1500);
+      
+      // Keyboard controls
+      document.addEventListener('keydown', function(e) {
+        // Don't trigger shortcuts if typing in a text field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+        }
+        
+        switch(e.key) {
+          case ' ':  // Space
+            if (video.paused) {
+              video.play();
+              playButton.textContent = 'Pause';
+            } else {
+              video.pause();
+              playButton.textContent = 'Play';
+            }
+            e.preventDefault();
+            break;
+            
+          case 'f':  // Fullscreen
+          case 'F':
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+              video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+              video.msRequestFullscreen();
+            }
+            e.preventDefault();
+            break;
+            
+          case 'm':  // Mute
+          case 'M':
+            video.muted = !video.muted;
+            muteButton.textContent = video.muted ? '🔇' : '🔊';
+            volumeSlider.value = video.muted ? 0 : video.volume;
+            e.preventDefault();
+            break;
+            
+          case 'ArrowLeft':  // Rewind 10 seconds
+            video.currentTime = Math.max(0, video.currentTime - 10);
+            e.preventDefault();
+            break;
+            
+          case 'ArrowRight':  // Forward 10 seconds
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            e.preventDefault();
+            break;
+            
+          case 'ArrowUp':  // Volume up
+            video.volume = Math.min(1, video.volume + 0.1);
+            volumeSlider.value = video.volume;
+            video.muted = false;
+            muteButton.textContent = '🔊';
+            e.preventDefault();
+            break;
+            
+          case 'ArrowDown':  // Volume down
+            video.volume = Math.max(0, video.volume - 0.1);
+            volumeSlider.value = video.volume;
+            if (video.volume === 0) {
+              video.muted = true;
+              muteButton.textContent = '🔇';
+            }
+            e.preventDefault();
+            break;
+            
+          case 'k':  // Toggle keyboard shortcuts
+          case 'K':
+            toggleKeyboardShortcuts();
+            e.preventDefault();
+            break;
+        }
+      });
+
+      // Hide loading screen when video is ready and start playback
+      video.addEventListener('canplay', function() {
+        setTimeout(() => {
+          loadingScreen.style.opacity = 0;
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            
+            // Force play after loading screen is gone
+            const startPlayback = function() {
+              video.play().then(() => {
+                // Update play button text
+                playButton.textContent = 'Pause';
+                // Unmute after playback starts - some browsers only allow autoplay when muted
+                video.muted = false;
+                muteButton.textContent = '🔊';
+                volumeSlider.value = 1;
+              }).catch(err => {
+                console.log('Autoplay prevented:', err);
+              });
+            };
+            
+            startPlayback();
+            
+            // Some browsers may automatically pause the video, let's re-try playback after a short delay
+            setTimeout(startPlayback, 300);
+          }, 500);
+        }, 800);
+      });
+
+      // Create black flame burst effect
+      function createBlackFlameBurst(wordElement) {
+        const rect = wordElement.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // Create burst container
+        const burstContainer = document.createElement('div');
+        burstContainer.style.position = 'absolute';
+        burstContainer.style.left = x + 'px';
+        burstContainer.style.top = y + 'px';
+        burstContainer.style.transform = 'translate(-50%, -50%)';
+        burstContainer.style.width = '100px';
+        burstContainer.style.height = '100px';
+        burstContainer.style.borderRadius = '50%';
+        burstContainer.style.background = 'radial-gradient(circle, rgba(100,100,190,0.7) 0%, rgba(40,40,100,0.4) 40%, rgba(10,10,50,0) 70%)';
+        burstContainer.style.boxShadow = '0 0 30px rgba(80, 80, 150, 0.7)';
+        burstContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        burstContainer.style.pointerEvents = 'none';
+        burstContainer.style.animation = 'powerBurst 0.8s forwards';
+        
+        document.body.appendChild(burstContainer);
+        
+        // Create particles
+        const particleContainer = document.createElement('div');
+        particleContainer.className = 'anime-particles';
+        particleContainer.style.left = x + 'px';
+        particleContainer.style.top = y + 'px';
+        particleContainer.style.zIndex = '2'; // Lower z-index to be under UI elements
+        document.body.appendChild(particleContainer);
+        
+        // Create black flame particles
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Size variation
+          const size = 2 + Math.random() * 4;
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random angle and distance
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 50 + Math.random() * 80;
+          
+          // Calculate trajectory
+          const xOffset = Math.cos(angle) * distance;
+          const yOffset = Math.sin(angle) * distance;
+          
+          // Set animation variables
+          particle.style.setProperty('--x', xOffset + 'px');
+          particle.style.setProperty('--y', yOffset + 'px');
+          
+          // Dark blue/purple particles
+          const hue = 230 + Math.random() * 40;
+          particle.style.background = `hsl(${hue}, 70%, ${40 + Math.random() * 40}%)`;
+          particle.style.boxShadow = `0 0 ${2 + Math.random() * 4}px hsl(${hue}, 90%, 50%)`;
+          
+          // Animation duration variation
+          particle.style.animation = `particleAnimation ${0.3 + Math.random() * 0.5}s forwards`;
+          
+          particleContainer.appendChild(particle);
+        }
+        
+        // Clean up after animation
+        setTimeout(() => {
+          if (burstContainer && burstContainer.parentNode) {
+            burstContainer.parentNode.removeChild(burstContainer);
+          }
+          if (particleContainer && particleContainer.parentNode) {
+            particleContainer.parentNode.removeChild(particleContainer);
+          }
+        }, 1000);
+      }
+      
+      // Function to destroy a black flame word with special explosion effect
+      function destroyBlackFlameWord(wordElement, proximityInterval, isClickDestroy = false) {
+        // Stop checking proximity
+        if (proximityInterval) {
+          clearInterval(proximityInterval);
+        }
+        
+        // Apply explosion animation with custom black flame style
+        wordElement.style.animation = 'explode 0.6s forwards';
+        wordElement.style.filter = 'hue-rotate(180deg) brightness(0.7)';
+        
+        // Create dark explosion effect
+        createDarkExplosionEffect(wordElement);
+        
+        // Create a visual effect on the title to show the interaction
+        if (!isClickDestroy) { // Only show title effect for proximity destroys, not clicks
+          titleElement.style.animation = 'none';
+          setTimeout(() => {
+            titleElement.style.animation = 'fireGlow 3s infinite alternate';
+            const pulse = document.createElement('div');
+            pulse.style.position = 'absolute';
+            pulse.style.left = titleBounds.centerX + 'px';
+            pulse.style.top = titleBounds.centerY + 'px';
+            pulse.style.transform = 'translate(-50%, -50%)';
+            pulse.style.width = '100%';
+            pulse.style.height = '100%';
+            pulse.style.borderRadius = '50%';
+            pulse.style.background = 'radial-gradient(circle, rgba(255,180,80,0.4) 0%, rgba(255,100,0,0.2) 60%, rgba(255,50,0,0) 100%)';
+            pulse.style.zIndex = '3'; // Lower z-index to be under UI elements
+            pulse.style.pointerEvents = 'none';
+            pulse.style.animation = 'rippleEffect 0.8s forwards';
+            document.body.appendChild(pulse);
+            
+            setTimeout(() => {
+              if (pulse && pulse.parentNode) {
+                pulse.parentNode.removeChild(pulse);
+              }
+            }, 800);
+          }, 10);
+        }
+        
+        // Remove the word after animation completes
+        setTimeout(() => {
+          if (wordElement.parentNode) {
+            wordElement.parentNode.removeChild(wordElement);
+          }
+        }, 600);
+      }
+      
+      // Function to apply destruction effect to footer links
+      function applyDestructionEffect(element, isBlackFlame = false) {
+        // Get original href if it's a link
+        let originalHref = '';
+        if (element.tagName === 'A') {
+          originalHref = element.getAttribute('href');
+        }
+        
+        // Get position of the element
+        const rect = element.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // Create a clone for restoration later
+        const clone = element.cloneNode(true);
+        
+        // Hide original element immediately
+        element.style.visibility = 'hidden';
+        
+        // Apply the appropriate destruction effect
+        if (isBlackFlame) {
+          // Create dark burst container
+          const burstContainer = document.createElement('div');
+          burstContainer.style.position = 'absolute';
+          burstContainer.style.left = x + 'px';
+          burstContainer.style.top = y + 'px';
+          burstContainer.style.transform = 'translate(-50%, -50%)';
+          burstContainer.style.width = '120px';
+          burstContainer.style.height = '120px';
+          burstContainer.style.borderRadius = '50%';
+          burstContainer.style.background = 'radial-gradient(circle, rgba(100,100,190,0.7) 0%, rgba(40,40,100,0.4) 40%, rgba(10,10,50,0) 70%)';
+          burstContainer.style.boxShadow = '0 0 30px rgba(80, 80, 150, 0.7)';
+          burstContainer.style.zIndex = '50';
+          burstContainer.style.pointerEvents = 'none';
+          burstContainer.style.animation = 'powerBurst 0.8s forwards';
+          document.body.appendChild(burstContainer);
+          
+          // Create dark explosion particles
+          createDarkExplosionEffect({getBoundingClientRect: () => rect});
+        } else {
+          // Create fire burst container
+          const burstContainer = document.createElement('div');
+          burstContainer.style.position = 'absolute';
+          burstContainer.style.left = x + 'px';
+          burstContainer.style.top = y + 'px';
+          burstContainer.style.transform = 'translate(-50%, -50%)';
+          burstContainer.style.width = '120px';
+          burstContainer.style.height = '120px';
+          burstContainer.style.borderRadius = '50%';
+          burstContainer.style.background = 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0) 70%)';
+          burstContainer.style.boxShadow = '0 0 30px rgba(255, 255, 255, 0.8)';
+          burstContainer.style.zIndex = '50';
+          burstContainer.style.pointerEvents = 'none';
+          burstContainer.style.animation = 'powerBurst 1.2s forwards';
+          document.body.appendChild(burstContainer);
+          
+          // Create fire explosion particles
+          createExplosionEffect({getBoundingClientRect: () => rect});
+        }
+        
+        // Set a timeout to "restore" the link with dramatic effect
+        setTimeout(() => {
+          // Remove the original element
+          if (element.parentNode) {
+            element.parentNode.removeChild(element);
+          }
+          
+          // Add the clone with animation
+          if (element.parentNode) {
+            // Add entrance animation
+            clone.style.animation = 'none';
+            clone.style.opacity = '0';
+            clone.style.transform = 'scale(0.5)';
+            clone.style.transition = 'opacity 0.8s, transform 0.8s';
+            
+            // Add back to DOM
+            element.parentNode.appendChild(clone);
+            
+            // Force reflow
+            clone.offsetHeight;
+            
+            // Start animation
+            setTimeout(() => {
+              clone.style.opacity = '1';
+              clone.style.transform = 'scale(1)';
+            }, 50);
+            
+            // Add the destruction effect back to the clone
+            if (clone.tagName === 'A') {
+              clone.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Execute destruction effect
+                applyDestructionEffect(clone, isBlackFlame);
+                
+                // After a delay, navigate to the original URL
+                setTimeout(() => {
+                  if (originalHref.startsWith('mailto:')) {
+                    window.location.href = originalHref;
+                  } else {
+                    window.open(originalHref, '_blank');
+                  }
+                }, 600);
+              });
+            } else {
+              clone.addEventListener('click', function() {
+                applyDestructionEffect(clone, isBlackFlame);
+              });
+            }
+          }
+        }, 500);
+      }
+      
+      // Add destruction effects to footer elements
+      document.addEventListener('DOMContentLoaded', function() {
+        // Footer title destruction effect
+        const footerTitle = document.getElementById('footerTitle');
+        if (footerTitle) {
+          footerTitle.addEventListener('click', function() {
+            // Apply fire effect - alternate between fire and black flame
+            const useBlackFlame = Math.random() > 0.5;
+            applyDestructionEffect(this, useBlackFlame);
+          });
+        }
+        
+        // Social media links destruction effects
+        const destroyableLinks = document.querySelectorAll('.destroyable-link');
+        destroyableLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Different effects for different links
+            let useBlackFlame = false;
+            
+            if (this.id === 'githubLink' || this.id === 'linkedinLink') {
+              useBlackFlame = true;
+            }
+            
+            // Apply the destruction effect
+            applyDestructionEffect(this, useBlackFlame);
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html> 

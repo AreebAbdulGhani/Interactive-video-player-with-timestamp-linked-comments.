@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive Video Player</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #4C1D95;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    
+    h1 {
+      color: #F472B6;
+      margin-bottom: 10px;
+    }
+    
+    h2 {
+      color: #F9A8D4;
+      margin-bottom: 30px;
+    }
+    
+    .video-container {
+      border: 4px solid #EC4899;
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 800px;
+      width: 90%;
+    }
+    
+    video {
+      width: 100%;
+      display: block;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: rgba(0,0,0,0.5);
+    }
+    
+    button {
+      background-color: #F472B6;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>インタラクティブビデオプレーヤー</h1>
+  <h2>Interactive Video Player</h2>
+  
+  <div class="video-container">
+    <video id="video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"></video>
+    <div class="controls">
+      <button id="playButton">Play</button>
+      <button id="fullscreenButton">Fullscreen</button>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const video = document.getElementById('video');
+      const playButton = document.getElementById('playButton');
+      const fullscreenButton = document.getElementById('fullscreenButton');
+      
+      playButton.addEventListener('click', function() {
+        if (video.paused) {
+          video.play();
+          playButton.textContent = 'Pause';
+        } else {
+          video.pause();
+          playButton.textContent = 'Play';
+        }
+      });
+      
+      fullscreenButton.addEventListener('click', function() {
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
