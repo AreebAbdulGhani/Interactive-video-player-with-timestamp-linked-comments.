@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔥 Anime Interactive Video Player 🔥
 
-## Getting Started
+An immersive video player with floating Japanese text, particle effects, and timestamp-linked comments. Created for the CodeCircuit Hackathon.
 
-First, run the development server:
+## ✨ Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Interactive Floating Words**: Japanese words float across the screen and explode when clicked or when touching the title
+- **Fire & Dark Effects**: Two visual themes with unique animations and explosion styles
+- **Time-Stamped Comments**: Add comments at specific video timestamps with one-click navigation
+- **Custom Video Controls**: Play/pause, volume, speed control, and more
+- **Visual Effects**: Particle explosions, ripples, glitches, and energy bursts
+- **Footer Animations**: Social media links with destruction effects when clicked
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/AreebAbdulGhani/anime-video-player.git
+   cd anime-video-player
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Video File Setup** (Important!)
+   - Place your anime video file in the project directory
+   - Name it exactly: `Best Anime Fights 2024 「AMV 」 - Gods 🔥.mp4` 
+   - If using a different filename, edit line 1205 in `anime-video-player-fixed.html`
 
-## Learn More
+3. **Launch the Player**
+   ```bash
+   chmod +x launch-player.sh
+   ./launch-player.sh
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## ⌨️ Keyboard Controls
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Space**: Play/Pause
+- **F**: Fullscreen
+- **M**: Mute/Unmute
+- **←/→**: Rewind/Forward 10 seconds
+- **↑/↓**: Volume Up/Down
+- **K**: Show/Hide Keyboard Shortcuts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔍 Troubleshooting
 
-## Deploy on Vercel
+- **Loading Screen Stuck**: Verify video filename matches exactly with HTML file
+- **Video Not Playing**: Click anywhere on the page to enable autoplay
+- **Browser Limitations**: Try Firefox or Safari if Chrome blocks local video
+- **Navigation Issues**: Try File > Open in your browser if direct links don't work
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 💻 Technologies Used
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **HTML5**: Video API and semantic structure
+- **CSS3**: Advanced animations and visual effects
+- **JavaScript**: DOM manipulation without external libraries
+- **Local Storage**: For saving comments (optional)
+
+## 🎮 Interactive Elements
+
+- **Click Japanese Words**: Trigger explosion effects with different styles
+- **Add Time Comments**: Create markers on the progress bar for key moments
+- **Footer Links**: Click social links to see destruction animations
+- **Title Collisions**: Watch words explode when they touch the title
+
+## 🙏 Acknowledgments
+
+- Special thanks to the **CodeCircuit Hackathon** for the opportunity
+- Built with vibe by Areeb
+- All anime-themed content is for demonstration purposes
+
+---
+
+⚡ Made with vibe by Areeb ⚡
